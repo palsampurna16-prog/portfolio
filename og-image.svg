@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
+  <title id="title">Sampurna Pal — Systems and Operations</title>
+  <desc id="desc">Portfolio preview for Sampurna Pal, an IPMA-certified project manager focused on operations, quality systems, and data-driven decisions.</desc>
+  <defs>
+    <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M16 0H0V16" fill="none" stroke="#EDEAE3" stroke-opacity=".045" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#121416" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#121416" stop-opacity=".92"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="627" fill="#121416"/>
+  <rect width="1200" height="627" fill="url(#grid)"/>
+  <rect x="720" y="0" width="480" height="627" fill="url(#fade)"/>
+
+  <!-- Instrument bar -->
+  <line x1="0" y1="52" x2="1200" y2="52" stroke="#262A2E"/>
+  <text x="42" y="32" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="14" letter-spacing="-.2">Sampurna Pal</text>
+  <line x1="160" y1="26" x2="568" y2="26" stroke="#262A2E"/>
+  <text x="585" y="32" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.6">ST.01 ORIGIN · 000%</text>
+  <text x="770" y="32" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.4">CASE STUDIES</text>
+  <text x="900" y="32" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.4">SYSTEMS</text>
+  <text x="1010" y="32" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.4">CONTACT</text>
+  <rect x="1118" y="15" width="48" height="24" fill="none" stroke="#343A40"/>
+  <text x="1130" y="31" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="8" letter-spacing="1">LIGHT</text>
+
+  <!-- Measurement rail and thread -->
+  <line x1="112" y1="53" x2="112" y2="145" stroke="#878D95" stroke-opacity=".55"/>
+  <line x1="112" y1="430" x2="112" y2="627" stroke="#878D95" stroke-opacity=".55"/>
+  <circle cx="112" cy="160" r="9" fill="none" stroke="#5C678F" stroke-opacity=".8"/>
+  <circle cx="112" cy="160" r="3" fill="#8E9AC6"/>
+  <g fill="#666C74" font-family="Menlo, Consolas, monospace" font-size="7" letter-spacing="1">
+    <text x="18" y="224">01</text><text x="18" y="247">02</text><text x="18" y="270">03</text>
+    <text x="18" y="293">04</text><text x="18" y="316">05</text><text x="18" y="339">06</text>
+    <text x="18" y="362">07</text><text x="18" y="385">08</text>
+  </g>
+  <g stroke="#343A40" stroke-width="1">
+    <line x1="15" y1="220" x2="34" y2="220"/><line x1="15" y1="243" x2="29" y2="243"/>
+    <line x1="15" y1="266" x2="34" y2="266"/><line x1="15" y1="289" x2="29" y2="289"/>
+    <line x1="15" y1="312" x2="34" y2="312"/><line x1="15" y1="335" x2="29" y2="335"/>
+    <line x1="15" y1="358" x2="34" y2="358"/><line x1="15" y1="381" x2="29" y2="381"/>
+  </g>
+
+  <!-- Hero -->
+  <text x="66" y="122" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.35">VAASA, FINLAND · RIGHT TO WORK IN FINLAND</text>
+  <line x1="66" y1="135" x2="98" y2="135" stroke="#343A40"/>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="400" letter-spacing="-2.8">
+    <text x="66" y="214" fill="#EDEAE3">I build the systems</text>
+    <text x="66" y="270" fill="#EDEAE3">that turn operational</text>
+    <text x="66" y="326" fill="#EDEAE3">data into <tspan fill="#878D95">decisions.</tspan></text>
+  </g>
+
+  <g fill="#C7C3BB" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="-.15">
+    <text x="66" y="382">IPMA-certified project manager finishing an M.Sc. in Industrial Engineering</text>
+    <text x="66" y="405">and Management at the University of Vaasa. I lead quality systems and</text>
+    <text x="66" y="428">cross-functional teams, and build the analytical tools those teams run on.</text>
+  </g>
+
+  <!-- Portfolio metadata strip -->
+  <line x1="66" y1="480" x2="1136" y2="480" stroke="#262A2E"/>
+  <g font-family="Menlo, Consolas, monospace">
+    <text x="66" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">CURRENT</text>
+    <text x="305" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">CERTIFICATION</text>
+    <text x="580" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">ACADEMIC</text>
+    <text x="835" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">OPEN TO</text>
+    <text x="66" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Content Quality Team Lead</text>
+    <text x="305" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">IPMA Foundation · May 2026</text>
+    <text x="580" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">M.Sc. IEM · GPA 4.09 / 5</text>
+    <text x="835" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Project · Operations</text>
+  </g>
+  <line x1="66" y1="566" x2="1136" y2="566" stroke="#343A40"/>
+  <circle cx="66" cy="566" r="3" fill="#9AB3A1"/>
+</svg>
