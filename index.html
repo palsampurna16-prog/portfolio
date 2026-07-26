@@ -242,17 +242,18 @@ a{ color: inherit; }
 /* left measurement rail */
 .rail{
   position: fixed; left: 14px; top:0; bottom:0; width: 34px; z-index:5;
-  pointer-events:none;
+  pointer-events:auto;
   display:flex; flex-direction:column; justify-content:center;
   gap: 10px;
 }
 .rail-item{
   display:flex; align-items:center; gap:7px;
-  color: var(--slate-2);
+  color: var(--slate-2); text-decoration:none; cursor:pointer;
   font-family: var(--mono); font-size:8.5px; letter-spacing:.1em;
   opacity:.55;
   transition: opacity var(--d-2) var(--e-out), color var(--d-2) var(--e-out);
 }
+.rail-item:hover{ opacity:1; color:var(--ink); }
 .rail-item i{
   display:block; width:18px; height:1px; background: currentColor;
   transform: scaleX(.44); transform-origin: left center;
@@ -273,7 +274,7 @@ main{ position:relative; z-index:2; }
   padding: 0 var(--gut);
 }
 
-.sec{ padding: var(--sec) 0; position:relative; }
+.sec{ padding: var(--sec) 0; position:relative; scroll-margin-top:54px; }
 .sec + .sec{ border-top: 1px solid var(--rule); }
 
 .sec-head{
@@ -680,7 +681,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 </header>
 
 <!-- station rail -->
-<div class="rail" id="rail" aria-hidden="true"></div>
+<nav class="rail" id="rail" aria-label="Page sections"></nav>
 
 <main>
 
@@ -1762,11 +1763,10 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     }
     if (!d) d = smooth;
 
-    // Guide underneath (dotted, full length), then the live line over it. Both
-    // carry the same breaks and both scroll with the page (the SVG is in flow).
-    var guide = svgEl("path", { d:d, class:"t-guide" });
-    var line  = svgEl("path", { d:d, class:"t-line" });
-    g.appendChild(guide);
+    // Just the live line. It starts hidden and draws itself in as you scroll —
+    // nothing is shown ahead of where you've reached. (No dotted guide: the page
+    // opens with no line at all, and it appears only as you move down.)
+    var line = svgEl("path", { d:d, class:"t-line" });
     g.appendChild(line);
 
     // start terminator
@@ -1843,9 +1843,14 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   var rail = document.getElementById("rail");
   var railItems = [];
   sections.forEach(function(sec, i){
-    var d = document.createElement("div");
+    var d = document.createElement("a");
     d.className = "rail-item";
-    d.innerHTML = '<i></i>' + String(i + 1).padStart(2, "0");
+    d.href = "#" + sec.id;
+    d.setAttribute("aria-label", "Go to " + (sec.getAttribute("data-station") || "section"));
+    var tick = document.createElement("i");
+    tick.setAttribute("aria-hidden", "true");
+    d.appendChild(tick);
+    d.appendChild(document.createTextNode(String(i + 1).padStart(2, "0")));
     rail.appendChild(d);
     railItems.push(d);
   });
