@@ -3,8 +3,6 @@
 <meta name="description" content="Sampurna Pal. IPMA-certified project manager, operations and quality systems, M.Sc. Industrial Engineering and Management, University of Vaasa.">
 <title>Sampurna Pal, Systems and Operations</title>
 
-<script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.7/build/spline-viewer.js"></script>
-
 <style>
 /* ============================================================
    TOKENS
@@ -193,10 +191,9 @@ a{ color: inherit; }
 }
 #thread .t-node{
   fill: var(--paper); stroke: var(--slate); stroke-width:1.1;
-  opacity:0;
   transition: stroke var(--d-2) var(--e-out), r var(--d-2) var(--e-out);
 }
-#thread .t-node.lit{ opacity:1; stroke: var(--indigo); }
+#thread .t-node.lit{ stroke: var(--indigo); }
 #thread .t-ring{
   fill:none; stroke: var(--indigo); stroke-width:1;
   opacity:0; transform-box: fill-box; transform-origin: center;
@@ -207,11 +204,6 @@ a{ color: inherit; }
 #thread .t-tick{ stroke: var(--slate); stroke-width:1; opacity:0; transition: opacity var(--d-2) var(--e-out); }
 #thread .t-tick.lit{ opacity:.32; }
 #thread .t-cap{ fill:none; stroke: var(--ink); stroke-width:1.2; opacity:.5; }
-#thread .t-pulse{ opacity:0; }
-#thread.has-drawn .t-pulse{ opacity:.8; }
-#thread:not(.has-drawn) .t-ring,
-#thread:not(.has-drawn) .t-tick,
-#thread:not(.has-drawn) .t-cap{ opacity:0; }
 
 /* ============================================================
    CHROME — instrument bar + station rail
@@ -250,18 +242,17 @@ a{ color: inherit; }
 /* left measurement rail */
 .rail{
   position: fixed; left: 14px; top:0; bottom:0; width: 34px; z-index:5;
-  pointer-events:auto;
+  pointer-events:none;
   display:flex; flex-direction:column; justify-content:center;
   gap: 10px;
 }
 .rail-item{
   display:flex; align-items:center; gap:7px;
-  color: var(--slate-2); text-decoration:none; cursor:pointer;
+  color: var(--slate-2);
   font-family: var(--mono); font-size:8.5px; letter-spacing:.1em;
   opacity:.55;
   transition: opacity var(--d-2) var(--e-out), color var(--d-2) var(--e-out);
 }
-.rail-item:hover{ opacity:1; color:var(--ink); }
 .rail-item i{
   display:block; width:18px; height:1px; background: currentColor;
   transform: scaleX(.44); transform-origin: left center;
@@ -282,7 +273,7 @@ main{ position:relative; z-index:2; }
   padding: 0 var(--gut);
 }
 
-.sec{ padding: var(--sec) 0; position:relative; scroll-margin-top:54px; }
+.sec{ padding: var(--sec) 0; position:relative; }
 .sec + .sec{ border-top: 1px solid var(--rule); }
 
 .sec-head{
@@ -328,31 +319,6 @@ main{ position:relative; z-index:2; }
    HERO
    ============================================================ */
 #hero{ padding-top: clamp(7rem, 6rem + 6vw, 11rem); padding-bottom: clamp(4rem,3rem+5vw,7rem); border-top:0; }
-
-.hero-grid{
-  display:grid;
-  grid-template-columns: minmax(0,1.12fr) minmax(280px,.88fr);
-  gap: clamp(2.2rem, 5vw, 6rem);
-  align-items:center;
-}
-.hero-copy{ min-width:0; }
-.hero-scene{
-  min-height: clamp(310px, 38vw, 520px);
-  position:relative;
-  overflow:hidden;
-  background:transparent;
-  isolation:isolate;
-}
-.hero-scene spline-viewer{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  display:block;
-  z-index:1;
-}
-@media (max-width: 860px){
-  .hero-grid{ grid-template-columns:1fr; gap:2.6rem; }
-  .hero-scene{ min-height:clamp(260px, 68vw, 430px); }
-}
 
 .hero-eyebrow{ color: var(--slate); display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; }
 .hero-eyebrow s{ display:block; width:34px; height:1px; background: var(--rule-2); text-decoration:none; }
@@ -714,7 +680,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 </header>
 
 <!-- station rail -->
-<nav class="rail" id="rail" aria-label="Page sections"></nav>
+<div class="rail" id="rail" aria-hidden="true"></div>
 
 <main>
 
@@ -723,27 +689,13 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
      ============================================================ -->
 <section class="sec" id="hero" data-station="Origin" data-thread="0.13">
   <div class="wrap">
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <div class="hero-eyebrow mono"><s></s> Vaasa, Finland · Right to work in Finland</div>
+    <div class="hero-eyebrow mono"><s></s> Vaasa, Finland · Right to work in Finland</div>
 
-        <h1 class="hero-title" id="heroTitle">I build the systems that turn operational data into <em>decisions.</em></h1>
+    <h1 class="hero-title" id="heroTitle">I build the systems that turn operational data into <em>decisions.</em></h1>
 
-        <p class="hero-lede rv">
-          IPMA-certified project manager finishing an M.Sc. in Industrial Engineering and Management at the University of Vaasa. I lead quality systems and cross-functional teams, and I build the analytical tools those teams run on. Both at once, not one after the other.
-        </p>
-      </div>
-
-      <div class="hero-scene" aria-label="Interactive 3D systems model">
-        <spline-viewer
-          url="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-          loading="lazy"
-          events-target="local"
-          hint="false"
-          aria-hidden="true">
-        </spline-viewer>
-      </div>
-    </div>
+    <p class="hero-lede rv">
+      IPMA-certified project manager finishing an M.Sc. in Industrial Engineering and Management at the University of Vaasa. I lead quality systems and cross-functional teams, and I build the analytical tools those teams run on. Both at once, not one after the other.
+    </p>
 
     <dl class="hero-meta rv">
       <div><dt class="mono">Current</dt><dd>Content Quality Team Lead, SkillCat</dd></div>
@@ -1662,7 +1614,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   var thread = document.getElementById("thread");
   var sections = Array.prototype.slice.call(document.querySelectorAll("[data-thread]"));
   var T = null;
-  var hasScrolled = false;
 
   /* ---------- break the line where it crosses text ----------
      The line keeps its original dramatic routing (the hardcoded data-thread
@@ -1811,10 +1762,11 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     }
     if (!d) d = smooth;
 
-    // Just the live line. It starts hidden and draws itself in as you scroll —
-    // nothing is shown ahead of where you've reached. (No dotted guide: the page
-    // opens with no line at all, and it appears only as you move down.)
-    var line = svgEl("path", { d:d, class:"t-line" });
+    // Guide underneath (dotted, full length), then the live line over it. Both
+    // carry the same breaks and both scroll with the page (the SVG is in flow).
+    var guide = svgEl("path", { d:d, class:"t-guide" });
+    var line  = svgEl("path", { d:d, class:"t-line" });
+    g.appendChild(guide);
     g.appendChild(line);
 
     // start terminator
@@ -1876,9 +1828,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   // stays at its initial reveal and the dotted guide carries the rest.
   function paintThread(){
     if (!T) return;
-    // Start with an empty sheet. Once scrolling begins, keep the reveal line
-    // slightly ahead of the viewport so the route continues to read naturally.
-    var readY = hasScrolled ? window.pageYOffset + window.innerHeight * 0.72 : 0;
+    var readY = window.pageYOffset + window.innerHeight * 0.72;
     var lo = 0, hi = T.total;
     for (var i = 0; i < 16; i++){
       var mid = (lo + hi) / 2;
@@ -1893,14 +1843,9 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   var rail = document.getElementById("rail");
   var railItems = [];
   sections.forEach(function(sec, i){
-    var d = document.createElement("a");
+    var d = document.createElement("div");
     d.className = "rail-item";
-    d.href = "#" + sec.id;
-    d.setAttribute("aria-label", "Go to " + (sec.getAttribute("data-station") || "section"));
-    var tick = document.createElement("i");
-    tick.setAttribute("aria-hidden", "true");
-    d.appendChild(tick);
-    d.appendChild(document.createTextNode(String(i + 1).padStart(2, "0")));
+    d.innerHTML = '<i></i>' + String(i + 1).padStart(2, "0");
     rail.appendChild(d);
     railItems.push(d);
   });
@@ -1935,8 +1880,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
      ========================================================== */
   var ticking = false;
   function onScroll(){
-    hasScrolled = true;
-    thread.classList.add("has-drawn");
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(function(){
