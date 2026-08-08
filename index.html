@@ -1017,26 +1017,26 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div>
           <h3>SkillMap Cohort 1 Tracker</h3>
           <div class="ctx mono">47 columns · 79 candidates · 10-week HVAC certification</div>
-          <p class="body">A 47-column tracker running a 79-candidate certification cohort, with automated risk flagging, weekly end-of-week reports, and a live summary dashboard. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place.</p>
+          <p class="body">A 47-column tracker running a 79-candidate certification cohort, with automated risk flagging, weekly end-of-week reports, and a live summary dashboard. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
         </div>
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Cohort state, week 9 of 10 <span class="grow"></span> <span>Live figures</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Final cohort state, week 10 of 10 <span class="grow"></span> <span>Final figures</span></div>
         <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 62 active, splitting into 26 on track, 33 at risk and 20 not on track, alongside a 47-column tracker glyph and a weekly pass-rate sparkline.">
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph and a weekly pass-rate sparkline.">
             <!-- enrolled -->
             <g class="hot"><rect class="st dw nd" x="20" y="140" width="150" height="60"/></g>
             <text class="fd big" x="34" y="170">79</text>
             <text class="fd" x="34" y="188">ENROLLED</text>
 
             <path class="ln-ink dw" d="M170 170 H 250"/>
-            <text class="fd" x="182" y="160">−17</text>
+            <text class="fd" x="182" y="160">−16</text>
 
             <!-- active -->
             <g class="hot"><rect class="st dw nd" x="250" y="140" width="170" height="60"/></g>
-            <text class="fd big" x="264" y="170">62</text>
-            <text class="fd" x="264" y="188">ACTIVE · WEEK 9/10</text>
+            <text class="fd big" x="264" y="170">63</text>
+            <text class="fd" x="264" y="188">ACTIVE · WEEK 10/10</text>
 
             <!-- fan out -->
             <path class="ln-sg dw" d="M420 170 C 470 170, 480 92, 540 92"/>
@@ -1044,17 +1044,17 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <path class="ln dw"    d="M420 170 C 470 170, 480 260, 540 260"/>
 
             <!-- status bars -->
-            <rect class="fillsg fd" x="540" y="86" width="146" height="7"/>
-            <text class="fd lbl-sg" x="540" y="76">ON TRACK</text>
-            <text class="fd" x="696" y="94"><tspan class="lbl-ink">26</tspan> · 32.9%</text>
+            <rect class="fillsg fd" x="540" y="86" width="200" height="7"/>
+            <text class="fd lbl-sg" x="540" y="76">COMPLETED PROGRAM · ALL COURSES + ALL HANDS-ON PASSED</text>
+            <text class="fd" x="750" y="94"><tspan class="lbl-ink">45</tspan> · 57.0%</text>
 
-            <rect class="fillin fd" style="--dl:180ms" x="540" y="170" width="186" height="7"/>
-            <text class="fd lbl-in" style="--dl:180ms" x="540" y="160">AT RISK · FLAGGED FOR REVIEW</text>
-            <text class="fd" style="--dl:180ms" x="736" y="178"><tspan class="lbl-ink">33</tspan> · 41.8%</text>
+            <rect class="fillin fd" style="--dl:180ms" x="540" y="170" width="40" height="7"/>
+            <text class="fd lbl-in" style="--dl:180ms" x="540" y="160">ALL COURSES · NO HANDS-ON SUBMITTED</text>
+            <text class="fd" style="--dl:180ms" x="590" y="178"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
 
-            <rect class="fillsl fd" style="--dl:360ms" x="540" y="254" width="112" height="7"/>
-            <text class="fd" style="--dl:360ms" x="540" y="244">NOT ON TRACK</text>
-            <text class="fd" style="--dl:360ms" x="662" y="262"><tspan class="lbl-ink">20</tspan> · 25.3%</text>
+            <rect class="fillsl fd" style="--dl:360ms" x="540" y="254" width="40" height="7"/>
+            <text class="fd" style="--dl:360ms" x="540" y="244">DID NOT COMPLETE COURSES</text>
+            <text class="fd" style="--dl:360ms" x="590" y="262"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
 
             <!-- 47 column glyph -->
             <g id="colGlyph"></g>
@@ -1064,7 +1064,8 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <path class="ln thin dw" d="M540 384 H 900"/>
             <polyline class="ln-in dw" id="sparkline" points=""/>
             <g id="sparkDots"></g>
-            <text class="fd" x="540" y="316">WEEKLY HANDS-ON TASK PASS RATE · 87% TO 100%</text>
+            <text class="fd" x="540" y="316">WEEKLY HANDS-ON PASS RATE · ALL 45 FULL SUBMITTERS PASSED</text>
+            <text class="fd lbl-in" style="--dl:520ms" x="540" y="330">0 ON TIME · 45 LATE</text>
 
             <!-- pulses -->
             <path class="flow" style="--sp:4.4s" d="M170 170 H 250"/>
@@ -1077,11 +1078,11 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <dl class="results">
         <div><dt class="mono">Tracker columns</dt><dd><span class="num" data-count="47">47</span></dd></div>
         <div><dt class="mono">Candidates</dt><dd><span class="num" data-count="79">79</span></dd></div>
-        <div><dt class="mono">Still active, wk 9</dt><dd><span class="num" data-count="62">62</span></dd></div>
-        <div class="accent"><dt class="mono">Task pass rate</dt><dd><span class="num" data-count="87">87</span><small>% to 100%</small></dd></div>
+        <div><dt class="mono">Completed all courses</dt><dd><span class="num" data-count="54">54</span></dd></div>
+        <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num" data-count="45">45</span><small>of 79</small></dd></div>
       </dl>
 
-      <p class="note">Figures are live and mid-program at week 9 of 10. A final completion rate is not available yet.</p>
+      <p class="note">Final at week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
     </article>
 
     <!-- ---- CASE 3 : ABB PACKAGING ---- -->
