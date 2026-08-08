@@ -86,9 +86,12 @@
 :root[data-theme="light"]{
   color-scheme: light;
   --paper:#F5F3EE; --paper-raised:#FAF9F5; --paper-sunk:#EFEDE6;
-  --ink:#191B1E; --ink-2:#34383E; --slate:#656B73; --slate-2:#969BA3;
+  /* slate-2 and sage are darker here than a straight tonal flip would give.
+     On this paper they carry diagram linework and the headline result figures,
+     and the lighter values sat at 2.5:1 and 3.3:1 respectively. */
+  --ink:#191B1E; --ink-2:#34383E; --slate:#656B73; --slate-2:#767B82;
   --rule:#DFDCD4; --rule-2:#CBC7BC;
-  --indigo:#46538A; --indigo-2:#7A85AE; --sage:#718B78; --sage-2:#9DB2A2;
+  --indigo:#46538A; --indigo-2:#7A85AE; --sage:#526B59; --sage-2:#9DB2A2;
   --grid-ink:25, 27, 30;
   --thread-guide-op:.30; --thread-live-op:.55;
 }
@@ -225,8 +228,19 @@ a{ color: inherit; }
   display:flex; align-items:center; gap: 1.4rem;
   padding: 0 var(--gut);
   height: 54px;
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  /* The blur is what keeps the bar legible. At 92% opaque and no blur, body
+     text scrolling underneath stayed readable through the chrome and collided
+     with the name. The blur destroys it as text, so the ground can stay
+     translucent and still read as frosted rather than muddy. */
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  backdrop-filter: blur(14px) saturate(1.6);
   border-bottom: 1px solid var(--rule);
+}
+/* No backdrop-filter means nothing softens what passes behind the bar, so fall
+   back to an opaque ground instead of letting the page show through. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .bar{ background: var(--paper); }
 }
 .bar-name{ font-size:.92rem; letter-spacing:-0.015em; white-space:nowrap; }
 .bar-name b{ font-weight:500; }
@@ -315,7 +329,11 @@ main{ position:relative; z-index:2; }
 .grid2 > *, .sec-head > *, .case-top > *{ min-width: 0; }
 .figure, .figure-body{ min-width: 0; }
 @media (max-width: 860px){
-  .sec-head, .grid2{ grid-template-columns: 1fr; gap: 1.1rem; }
+  /* .case-top has to collapse here too. It is built on the same
+     `var(--rail) 1fr` track pair, so with --rail at 0 its first column became
+     0px wide while the case ID text kept its own width and painted straight
+     over the case title and body copy. */
+  .sec-head, .grid2, .case-top{ grid-template-columns: 1fr; gap: 1.1rem; }
   :root{ --rail: 0px; }
 }
 
