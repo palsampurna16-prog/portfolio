@@ -349,6 +349,29 @@ main{ position:relative; z-index:2; }
 .rv{ opacity:0; transform: translateY(14px); transition: opacity var(--d-3) var(--e-out), transform var(--d-3) var(--e-out); }
 .on .rv, .rv.on{ opacity:1; transform:none; }
 
+/* Masked line reveal. JS bands the words into the lines they actually wrap
+   onto and wraps each in .ml-line; the mask is the overflow clip, and each
+   line rides its own delay off --i. Rides the section's .on like .rv does. */
+.ml-line{ display:block; overflow:hidden; }
+.ml-in{
+  display:block;
+  transform: translateY(105%);
+  transition: transform var(--d-3) var(--e-out);
+  transition-delay: calc(var(--i) * 90ms);
+}
+.on .ml-in{ transform:none; }
+
+/* Per-letter ripple on the title-block links. Rise only, staggered off --i,
+   so it needs no variable font and works on the system stack. */
+.lr{ display:inline-block; }
+.lr > span{
+  display:inline-block;
+  transition: transform var(--d-1) var(--e-out);
+  transition-delay: calc(var(--i) * 18ms);
+}
+a:hover > .lr > span,
+a:focus-visible > .lr > span{ transform: translateY(-3px); }
+
 .rule-draw{ height:1px; background: var(--rule-2); transform: scaleX(0); transform-origin: left; transition: transform var(--d-4) var(--e-mech); }
 .on .rule-draw{ transform: scaleX(1); }
 
@@ -677,6 +700,8 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   }
   .rv{ opacity:1; transform:none; }
   .w{ opacity:1; transform:none; }
+  .ml-in{ transform:none; }
+  .lr > span{ transform:none !important; }
   svg.dg .dw{ stroke-dashoffset:0 !important; }
   svg.dg .fd, svg.dg .fd-sg{ opacity:1 !important; }
   svg.dg .flow{ display:none; }
@@ -768,8 +793,8 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.02 / Approach</div>
       <div>
-        <h2>Raw operational data goes in. A decision comes out.</h2>
-        <p class="sub">Most reporting stops at the chart. The useful part is the layer after it: the flag that fires, the review that gets triggered, the call someone can actually defend in a meeting.</p>
+        <h2 data-ml>Raw operational data goes in. A decision comes out.</h2>
+        <p class="sub" data-ml>Most reporting stops at the chart. The useful part is the layer after it: the flag that fires, the review that gets triggered, the call someone can actually defend in a meeting.</p>
       </div>
     </div>
 
@@ -1973,6 +1998,112 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   document.querySelectorAll(".sec, .figure, .case, .tl-row, .caps, .tblock, .specs, .creds").forEach(function(el){
     io.observe(el);
   });
+
+  /* ==========================================================
+     MASKED LINE REVEAL
+     Lines can only be known after layout, so each word is
+     probed in place, banded by the offsetTop it landed on,
+     then re-rendered one masked line at a time. The rendered
+     text stays whole per line, so nothing is split for a
+     screen reader and copy-paste survives.
+     ========================================================== */
+  var mlTargets = document.querySelectorAll("[data-ml]");
+
+  function mlBand(el, words){
+    var probes = [], i;
+    el.textContent = "";
+    for (i = 0; i < words.length; i++){
+      var probe = document.createElement("span");
+      probe.style.display = "inline-block";
+      probe.textContent = words[i];
+      el.appendChild(probe);
+      probes.push(probe);
+      if (i < words.length - 1) el.appendChild(document.createTextNode(" "));
+    }
+
+    var groups = [], current = [], lastTop = null;
+    for (i = 0; i < probes.length; i++){
+      var top = probes[i].offsetTop;
+      if (lastTop !== null && top > lastTop + 1){
+        groups.push(current);
+        current = [];
+      }
+      current.push(words[i]);
+      lastTop = top;
+    }
+    if (current.length) groups.push(current);
+
+    return groups;
+  }
+
+  function mlRender(el, groups, startIndex){
+    el.textContent = "";
+    for (var i = 0; i < groups.length; i++){
+      var line = document.createElement("span");
+      line.className = "ml-line";
+      var inner = document.createElement("span");
+      inner.className = "ml-in";
+      inner.style.setProperty("--i", startIndex + i);
+      // Trailing space keeps the word boundary intact across the line break,
+      // so textContent and copy-paste do not run "goes" into "in."
+      inner.textContent = groups[i].join(" ") + (i < groups.length - 1 ? " " : "");
+      line.appendChild(inner);
+      el.appendChild(line);
+    }
+    return groups.length;
+  }
+
+  function mlSplit(){
+    var index = 0;
+    for (var i = 0; i < mlTargets.length; i++){
+      var el = mlTargets[i];
+      var text = el.getAttribute("data-ml-text");
+      if (!text){
+        text = el.textContent.replace(/\s+/g, " ").trim();
+        el.setAttribute("data-ml-text", text);
+      }
+      // The lede continues the heading's stagger rather than restarting it
+      index += mlRender(el, mlBand(el, text.split(" ")), index);
+    }
+  }
+
+  if (!REDUCED && mlTargets.length){
+    mlSplit();
+
+    var mlTimer = null;
+    window.addEventListener("resize", function(){
+      // Rebanding mid-drag would thrash layout, so it settles first
+      if (mlTimer) clearTimeout(mlTimer);
+      mlTimer = setTimeout(mlSplit, 150);
+    }, { passive: true });
+  }
+
+  /* ==========================================================
+     TITLE-BLOCK LINK RIPPLE
+     Each letter lifts on its own delay. aria-label carries the
+     original string so the split spans are never read out.
+     ========================================================== */
+  if (!REDUCED){
+    document.querySelectorAll("#contact .tblock dd a").forEach(function(a){
+      var text = a.textContent.trim();
+      if (!text) return;
+
+      var wrap = document.createElement("span");
+      wrap.className = "lr";
+      wrap.setAttribute("aria-hidden", "true");
+
+      for (var i = 0; i < text.length; i++){
+        var ch = document.createElement("span");
+        ch.style.setProperty("--i", i);
+        ch.textContent = text.charAt(i) === " " ? " " : text.charAt(i);
+        wrap.appendChild(ch);
+      }
+
+      a.setAttribute("aria-label", text);
+      a.textContent = "";
+      a.appendChild(wrap);
+    });
+  }
 
   // pause diagram pulse animations while off screen
   var pauseIO = new IntersectionObserver(function(entries){
