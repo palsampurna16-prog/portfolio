@@ -261,12 +261,6 @@ a{ color: inherit; }
   transform: scaleX(0); transform-origin: left center;
   transition: transform 120ms linear;
 }
-/* The station readout is the first thing to drop. With the CV link added there
-   are four nav items plus the theme toggle, and keeping the readout past this
-   width pushed "Case studies" onto a second line inside a 54px bar. */
-@media (max-width: 900px){
-  .bar-read{ display:none; }
-}
 @media (max-width: 720px){
   .bar-read, .bar-links{ display:none; }
 }
@@ -636,10 +630,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 .tb-cell dd{ overflow-wrap: anywhere; }
 .tb-cell:nth-child(3n){ border-right:0; }
 .tb-cell.span2{ grid-column: span 2; }
-.tb-cell.wide{ grid-column: 1 / -1; border-bottom:0; }
-/* Full-width row that keeps its bottom rule, unlike .wide which closes the
-   block. The right border would otherwise double up with the block's own. */
-.tb-cell.full{ grid-column: 1 / -1; border-right:0; }
+.tb-cell.wide{ grid-column: 1 / -1; border-right:0; border-bottom:0; }
 .tb-cell dt{ color: var(--slate); margin-bottom:.5rem; font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em; text-transform:uppercase; }
 .tb-cell dd{ margin:0; font-size:.98rem; letter-spacing:-0.012em; }
 .tb-cell dd.lg{ font-size: clamp(1.3rem,1rem+1.2vw,1.85rem); letter-spacing:-0.03em; line-height:1.1; }
@@ -752,7 +743,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <a href="#work">Case studies</a>
     <a href="#systems">Systems</a>
     <a href="#contact">Contact</a>
-    <a href="/Sampurna-Pal-CV.pdf" target="_blank" rel="noopener noreferrer">CV</a>
   </nav>
   <button class="tgl" id="tgl" type="button" aria-label="Switch colour theme">Theme</button>
   <div class="bar-prog" id="prog"></div>
@@ -1466,11 +1456,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       </div>
       <div class="tb-cell">
         <dt>Target</dt><dd>Finland &amp; Europe</dd>
-      </div>
-
-      <div class="tb-cell full">
-        <dt>CV</dt>
-        <dd><a href="/Sampurna-Pal-CV.pdf" target="_blank" rel="noopener noreferrer">Download PDF</a></dd>
       </div>
 
       <div class="tb-cell wide">
