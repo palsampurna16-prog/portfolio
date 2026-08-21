@@ -929,8 +929,8 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.04 / Case studies</div>
       <div>
-        <h2>Three systems, measured.</h2>
-        <p class="sub">A simulated factory cell, a live certification cohort, and a packaging configuration for 400 SKUs. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
+        <h2>Four systems, measured.</h2>
+        <p class="sub">A simulated factory cell, a live certification cohort, a packaging configuration for 400 SKUs, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
       </div>
     </div>
 
@@ -1037,15 +1037,16 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div class="case-id mono"><b>Case 02</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
         <div>
           <h3>SkillMap Cohort 1 Tracker</h3>
-          <div class="ctx mono">47 columns · 79 candidates · 10-week HVAC certification</div>
-          <p class="body">A 47-column tracker running a 79-candidate certification cohort, with automated risk flagging, weekly end-of-week reports, and a live summary dashboard. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
+          <div class="ctx mono">79 candidates · 10-week HVAC certification · weekly risk triage</div>
+          <p class="body">Weekly risk review on this cohort began as a manual pass across all 79 enrolled candidates. I replaced it with a 47-column tracker in Google Sheets, driven by Apps Script, that scores every candidate against rule-based criteria and classifies them On Track, At Risk, or Not On Track. The weekly pass now starts from a shortlist of 33 flagged cases rather than the full roster, and the same rules generate the end-of-week escalation report that goes to management.</p>
+          <p class="body">Flagging a case is one decision. Acting on the flag is a different one. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
         </div>
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Final cohort state, week 10 of 10 <span class="grow"></span> <span>Final figures</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
         <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph and a weekly pass-rate sparkline.">
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph, a weekly pass-rate sparkline, and a risk triage bar splitting the 79 candidates into 46 classified On Track and 33 flagged for weekly review.">
             <!-- enrolled -->
             <g class="hot"><rect class="st dw nd" x="20" y="140" width="150" height="60"/></g>
             <text class="fd big" x="34" y="170">79</text>
@@ -1088,6 +1089,14 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <text class="fd" x="540" y="316">WEEKLY HANDS-ON PASS RATE · ALL 45 FULL SUBMITTERS PASSED</text>
             <text class="fd lbl-in" style="--dl:520ms" x="540" y="330">0 ON TIME · 45 LATE</text>
 
+            <!-- weekly risk triage -->
+            <text class="fd" x="20" y="336">WEEKLY RISK TRIAGE · ON TRACK / AT RISK / NOT ON TRACK</text>
+            <rect class="fillsl fd" style="--dl:640ms" x="20" y="346" width="221" height="7"/>
+            <rect class="fillin fd" style="--dl:760ms" x="241" y="346" width="159" height="7"/>
+            <path class="ln-in dw" style="--dl:880ms" d="M241 340 V 362"/>
+            <text class="fd" style="--dl:640ms" x="20" y="374"><tspan class="lbl-ink">46</tspan> ON TRACK</text>
+            <text class="fd lbl-in" style="--dl:760ms" x="241" y="374">33 FLAGGED · REVIEWED WEEKLY</text>
+
             <!-- pulses -->
             <path class="flow" style="--sp:4.4s" d="M170 170 H 250"/>
             <path class="flow" style="--sp:5.6s;--dl:800ms" d="M420 170 C 470 170, 480 92, 540 92"/>
@@ -1099,11 +1108,12 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <dl class="results">
         <div><dt class="mono">Tracker columns</dt><dd><span class="num" data-count="47">47</span></dd></div>
         <div><dt class="mono">Candidates</dt><dd><span class="num" data-count="79">79</span></dd></div>
+        <div><dt class="mono">Flagged for review</dt><dd><span class="num" data-count="33">33</span><small>of 79</small></dd></div>
         <div><dt class="mono">Completed all courses</dt><dd><span class="num" data-count="54">54</span></dd></div>
         <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num" data-count="45">45</span><small>of 79</small></dd></div>
       </dl>
 
-      <p class="note">Final at week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
+      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
     </article>
 
     <!-- ---- CASE 3 : ABB PACKAGING ---- -->
@@ -1185,6 +1195,83 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div><dt class="mono">Per shipping unit</dt><dd><span class="num" data-count="0.3" data-dec="1">0.3</span><small>kg CO2e</small></dd></div>
       </dl>
     </article>
+
+    <!-- ---- CASE 4 : SCENARIO PLANNING ---- -->
+    <article class="case" id="case-scenario">
+      <div class="case-top">
+        <div class="case-id mono"><b>Case 04</b>Decision Analysis<br>Scenario planning<br>Grade 5 / 5</div>
+        <div>
+          <h3>Scenario planning under uncertainty</h3>
+          <div class="ctx mono">4 response strategies · Hurwicz and minimax regret · 300 × 300 grid</div>
+          <p class="body">A simulated national crisis with four candidate response strategies and no probabilities to attach to the outcomes. That rules out expected value, so I built a multi-criteria model and ranked the four alternatives under two decision rules that disagree by design: Hurwicz, which is tuned by an optimism coefficient, and minimax regret, which minimises the worst outcome you could look back on.</p>
+          <p class="body">Ranking once proves nothing, because both rules run on weights somebody chose. So I swept the parameters across a 300 × 300 grid in GNU Octave and mapped where the preferred strategy holds and where it flips. The GDP impact figures behind the model were justified against published COVID-19 literature rather than assumed.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <div class="figure-head mono"><span class="dot"></span> Fig. 4.4 / Decision rules and sensitivity surface <span class="grow"></span> <span>300 × 300 sweep</span></div>
+        <div class="figure-body">
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four candidate response strategies feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and minimax regret, whose outputs feed a sensitivity surface drawn as a lattice of squares of varying weight representing a 300 by 300 parameter grid.">
+            <text class="fd" x="20" y="24">FOUR CANDIDATE RESPONSE STRATEGIES · NO PROBABILITIES</text>
+
+            <!-- alternatives -->
+            <g class="hot"><rect class="st dw nd" x="20" y="48" width="180" height="34"/></g>
+            <text class="fd" x="34" y="70"><tspan class="lbl-ink">S1</tspan> · RESPONSE STRATEGY</text>
+
+            <g class="hot"><rect class="st dw nd" x="20" y="100" width="180" height="34"/></g>
+            <text class="fd" x="34" y="122"><tspan class="lbl-ink">S2</tspan> · RESPONSE STRATEGY</text>
+
+            <g class="hot"><rect class="st dw nd" x="20" y="152" width="180" height="34"/></g>
+            <text class="fd" x="34" y="174"><tspan class="lbl-ink">S3</tspan> · RESPONSE STRATEGY</text>
+
+            <g class="hot"><rect class="st dw nd" x="20" y="204" width="180" height="34"/></g>
+            <text class="fd" x="34" y="226"><tspan class="lbl-ink">S4</tspan> · RESPONSE STRATEGY</text>
+
+            <!-- collector bus -->
+            <path class="ln dw" d="M200 65 H 250 M200 117 H 250 M200 169 H 250 M200 221 H 250"/>
+            <path class="ln-ink dw" d="M250 65 V 221"/>
+
+            <!-- decision rules -->
+            <path class="ln-sg dw" d="M250 143 C 292 143, 300 114, 330 114"/>
+            <path class="ln-in dw" d="M250 143 C 292 143, 300 194, 330 194"/>
+
+            <g class="hot"><rect class="st dw nd" x="330" y="90" width="200" height="48"/></g>
+            <text class="fd lbl-sg" x="344" y="112">HURWICZ RULE</text>
+            <text class="fd" x="344" y="127">OPTIMISM COEFFICIENT</text>
+
+            <g class="hot"><rect class="st dw nd" x="330" y="170" width="200" height="48"/></g>
+            <text class="fd lbl-in" x="344" y="192">MINIMAX REGRET RULE</text>
+            <text class="fd" x="344" y="207">WORST CASE MINIMISED</text>
+
+            <!-- into the sweep -->
+            <path class="ln-sg dw" d="M530 114 C 570 114, 580 154, 620 154"/>
+            <path class="ln-in dw" d="M530 194 C 570 194, 580 154, 620 154"/>
+
+            <!-- sensitivity surface -->
+            <text class="fd" x="620" y="24">SENSITIVITY SURFACE · 300 × 300 GRID</text>
+            <g id="lattice" transform="translate(620,44)"></g>
+            <path class="ln thin dw" d="M620 296 H 900 M620 296 V 44"/>
+            <text class="fd" x="620" y="330">OPTIMISM COEFFICIENT SWEPT 0 TO 1</text>
+            <text class="fd" x="620" y="346">GNU OCTAVE · 90,000 PARAMETER COMBINATIONS</text>
+
+            <path class="ln thin dw" d="M20 306 H 560"/>
+            <text class="fd" x="20" y="330">SIMULATED NATIONAL CRISIS · FINLAND PANDEMIC POLICY</text>
+            <text class="fd" x="20" y="346">GDP IMPACT JUSTIFIED WITH COVID-19 LITERATURE</text>
+
+            <!-- pulses -->
+            <path class="flow" style="--sp:4s" d="M250 143 C 292 143, 300 114, 330 114"/>
+            <path class="flow" style="--sp:4.6s;--dl:1200ms" d="M530 194 C 570 194, 580 154, 620 154"/>
+          </svg>
+        </div>
+      </div>
+
+      <dl class="results">
+        <div><dt class="mono">Strategies ranked</dt><dd><span class="num" data-count="4">4</span></dd></div>
+        <div><dt class="mono">Decision rules</dt><dd><span class="num" data-count="2">2</span></dd></div>
+        <div class="accent"><dt class="mono">Parameter sweep</dt><dd><span class="num" data-count="300">300</span><small>× 300 grid</small></dd></div>
+        <div><dt class="mono">Documentation</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">Model and Octave scripts, on request</dd></div>
+      </dl>
+    </article>
   </div>
 </section>
 
@@ -1197,7 +1284,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div class="sec-tag mono"><i></i>ST.05 / Analysis</div>
       <div>
         <h2>When the answer depends on what you assume, test the assumption.</h2>
-        <p class="sub">Two decision analysis projects, both graded 5 out of 5. One models a personal career decision as a multi-objective problem. One evaluates pandemic policy alternatives under uncertainty.</p>
+        <p class="sub">The crisis-response model is Case 04. Alongside it: a personal career decision modelled as a multi-objective problem, an independent lab project, and a SAS study on education and financial behaviour.</p>
       </div>
     </div>
 
@@ -1205,9 +1292,9 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div class="mono sec-tag" style="padding-top:.1rem">Fig. 5.1 / Decision structure</div>
       <div>
         <div class="figure">
-          <div class="figure-head mono"><span class="dot"></span> Decision tree and sensitivity surface <span class="grow"></span> <span>Optimal path highlighted</span></div>
+          <div class="figure-head mono"><span class="dot"></span> Decision tree, multi-objective <span class="grow"></span> <span>Optimal path highlighted</span></div>
           <div class="figure-body">
-            <svg class="dg" viewBox="0 0 920 360" role="img" aria-label="A decision tree with four outcome branches, the optimal path highlighted, next to a sensitivity grid rendered as a lattice of squares of varying weight.">
+            <svg class="dg" viewBox="0 0 560 360" role="img" aria-label="A decision tree with four outcome branches and their expected values, the optimal path highlighted.">
               <!-- tree -->
               <text class="fd" x="20" y="24">DECISION TREE · MULTI-OBJECTIVE</text>
 
@@ -1235,13 +1322,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 
               <path class="ln thin dw" d="M60 330 H 500"/>
               <text class="fd" x="60" y="346">"MY FALL 2026" · GNU OCTAVE · SENSITIVITY ANALYSIS</text>
-
-              <!-- lattice -->
-              <text class="fd" x="620" y="24">SENSITIVITY SURFACE · HURWICZ RULE</text>
-              <g id="lattice" transform="translate(620,44)"></g>
-              <path class="ln thin dw" d="M620 296 H 900 M620 296 V 44"/>
-              <text class="fd" x="620" y="330">"FINLAND PANDEMIC POLICY" · 300 × 300 GRID</text>
-              <text class="fd" x="620" y="346">GDP IMPACT JUSTIFIED WITH COVID-19 LITERATURE</text>
 
               <path class="flow" style="--sp:4s" d="M60 180 C 130 180, 150 100, 230 100"/>
               <path class="flow" style="--sp:4s;--dl:1400ms" d="M230 100 C 300 100, 320 62, 400 62"/>
