@@ -1202,30 +1202,32 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div class="case-id mono"><b>Case 04</b>Decision Analysis<br>Scenario planning<br>Grade 5 / 5</div>
         <div>
           <h3>Scenario planning under uncertainty</h3>
-          <div class="ctx mono">4 response strategies · Hurwicz and minimax regret · 300 × 300 grid</div>
-          <p class="body">A simulated national crisis with four candidate response strategies and no probabilities to attach to the outcomes. That rules out expected value, so I built a multi-criteria model and ranked the four alternatives under two decision rules that disagree by design: Hurwicz, which is tuned by an optimism coefficient, and minimax regret, which minimises the worst outcome you could look back on.</p>
-          <p class="body">Ranking once proves nothing, because both rules run on weights somebody chose. So I swept the parameters across a 300 × 300 grid in GNU Octave and mapped where the preferred strategy holds and where it flips. The GDP impact figures behind the model were justified against published COVID-19 literature rather than assumed.</p>
+          <div class="ctx mono">4 policy alternatives · expected value and Hurwicz · 300 × 300 grid</div>
+          <p class="body">A simulated Koala Ebola outbreak in a tourist hub with heavy connectivity to Finland, and four policy alternatives spanning the intervention spectrum: minimal travel restrictions, mandatory testing and quarantine, border closure, and internal lockdown. Writing as the Ministry of Health and Wellbeing, I scored all four across four scenarios on a single measure, change in Finnish GDP, with the matrix values justified against COVID-19 non-pharmaceutical intervention studies and tourism's 5.3% share of Finnish GDP in 2019.</p>
+          <p class="body">Two decision rules, because they answer different questions. The expected value rule carries belief about containment; the Hurwicz rule carries the decision-maker's optimism. Combined with equal weights after affine scaling, then swept across a 300 × 300 grid of containment probability against optimism. Testing and quarantine proved the most robust policy, optimal across the widest combined range. Minimal restrictions win only when containment is likely and the decision-maker is optimistic; internal lockdown only when containment is unlikely and they are pessimistic.</p>
         </div>
       </div>
 
       <div class="figure">
         <div class="figure-head mono"><span class="dot"></span> Fig. 4.4 / Decision rules and sensitivity surface <span class="grow"></span> <span>300 × 300 sweep</span></div>
         <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four candidate response strategies feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and minimax regret, whose outputs feed a sensitivity surface drawn as a lattice of squares of varying weight representing a 300 by 300 parameter grid.">
-            <text class="fd" x="20" y="24">FOUR CANDIDATE RESPONSE STRATEGIES · NO PROBABILITIES</text>
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four policy alternatives, minimal restrictions, testing and quarantine, border closure and internal lockdown, feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and expected value with a containment probability, whose outputs feed a sensitivity surface drawn as a lattice of squares of varying weight representing a 300 by 300 parameter grid.">
+            <text class="fd" x="20" y="24">FOUR POLICY ALTERNATIVES · MINISTRY OF HEALTH AND WELLBEING</text>
 
             <!-- alternatives -->
             <g class="hot"><rect class="st dw nd" x="20" y="48" width="180" height="34"/></g>
-            <text class="fd" x="34" y="70"><tspan class="lbl-ink">S1</tspan> · RESPONSE STRATEGY</text>
+            <text class="fd" x="34" y="70"><tspan class="lbl-ink">A1</tspan> · MINIMAL RESTRICTIONS</text>
 
-            <g class="hot"><rect class="st dw nd" x="20" y="100" width="180" height="34"/></g>
-            <text class="fd" x="34" y="122"><tspan class="lbl-ink">S2</tspan> · RESPONSE STRATEGY</text>
+            <g class="hot"><rect class="st dw nd" x="20" y="100" width="180" height="34" style="stroke:var(--sage)"/></g>
+            <text class="fd" x="34" y="122"><tspan class="lbl-sg">A2</tspan> · TESTING + QUARANTINE</text>
 
             <g class="hot"><rect class="st dw nd" x="20" y="152" width="180" height="34"/></g>
-            <text class="fd" x="34" y="174"><tspan class="lbl-ink">S3</tspan> · RESPONSE STRATEGY</text>
+            <text class="fd" x="34" y="174"><tspan class="lbl-ink">A3</tspan> · BORDER CLOSURE</text>
 
             <g class="hot"><rect class="st dw nd" x="20" y="204" width="180" height="34"/></g>
-            <text class="fd" x="34" y="226"><tspan class="lbl-ink">S4</tspan> · RESPONSE STRATEGY</text>
+            <text class="fd" x="34" y="226"><tspan class="lbl-ink">A4</tspan> · INTERNAL LOCKDOWN</text>
+
+            <text class="fd lbl-sg" style="--dl:900ms" x="20" y="262">A2 OPTIMAL ACROSS THE WIDEST RANGE OF P0 AND W</text>
 
             <!-- collector bus -->
             <path class="ln dw" d="M200 65 H 250 M200 117 H 250 M200 169 H 250 M200 221 H 250"/>
@@ -1240,8 +1242,8 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <text class="fd" x="344" y="127">OPTIMISM COEFFICIENT</text>
 
             <g class="hot"><rect class="st dw nd" x="330" y="170" width="200" height="48"/></g>
-            <text class="fd lbl-in" x="344" y="192">MINIMAX REGRET RULE</text>
-            <text class="fd" x="344" y="207">WORST CASE MINIMISED</text>
+            <text class="fd lbl-in" x="344" y="192">EXPECTED VALUE RULE</text>
+            <text class="fd" x="344" y="207">CONTAINMENT PROBABILITY</text>
 
             <!-- into the sweep -->
             <path class="ln-sg dw" d="M530 114 C 570 114, 580 154, 620 154"/>
@@ -1251,11 +1253,11 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <text class="fd" x="620" y="24">SENSITIVITY SURFACE · 300 × 300 GRID</text>
             <g id="lattice" transform="translate(620,44)"></g>
             <path class="ln thin dw" d="M620 296 H 900 M620 296 V 44"/>
-            <text class="fd" x="620" y="330">OPTIMISM COEFFICIENT SWEPT 0 TO 1</text>
+            <text class="fd" x="620" y="330">CONTAINMENT PROBABILITY × OPTIMISM</text>
             <text class="fd" x="620" y="346">GNU OCTAVE · 90,000 PARAMETER COMBINATIONS</text>
 
             <path class="ln thin dw" d="M20 306 H 560"/>
-            <text class="fd" x="20" y="330">SIMULATED NATIONAL CRISIS · FINLAND PANDEMIC POLICY</text>
+            <text class="fd" x="20" y="330">SIMULATED KOALA EBOLA OUTBREAK · FINLAND POLICY</text>
             <text class="fd" x="20" y="346">GDP IMPACT JUSTIFIED WITH COVID-19 LITERATURE</text>
 
             <!-- pulses -->
@@ -1266,10 +1268,10 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       </div>
 
       <dl class="results">
-        <div><dt class="mono">Strategies ranked</dt><dd><span class="num" data-count="4">4</span></dd></div>
+        <div><dt class="mono">Policy alternatives</dt><dd><span class="num" data-count="4">4</span></dd></div>
         <div><dt class="mono">Decision rules</dt><dd><span class="num" data-count="2">2</span></dd></div>
         <div class="accent"><dt class="mono">Parameter sweep</dt><dd><span class="num" data-count="300">300</span><small>× 300 grid</small></dd></div>
-        <div><dt class="mono">Documentation</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">Model and Octave scripts, on request</dd></div>
+        <div><dt class="mono">Most robust policy</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">Testing and quarantine, across the widest range</dd></div>
       </dl>
     </article>
   </div>
@@ -1284,7 +1286,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div class="sec-tag mono"><i></i>ST.05 / Analysis</div>
       <div>
         <h2>When the answer depends on what you assume, test the assumption.</h2>
-        <p class="sub">The crisis-response model is Case 04. Alongside it: a personal career decision modelled as a multi-objective problem, an independent lab project, and a SAS study on education and financial behaviour.</p>
+        <p class="sub">The pandemic policy model is Case 04. Alongside it: a personal career decision modelled as a multi-objective problem under expected value and minimax regret, an independent lab project, and a SAS study on education and financial behaviour.</p>
       </div>
     </div>
 
