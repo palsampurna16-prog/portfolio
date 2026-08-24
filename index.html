@@ -682,6 +682,52 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 /* ============================================================
    REDUCED MOTION — everything resolves to its final state
    ============================================================ */
+
+/* ============================================================
+   FIG 4.1 - INTERACTIVE CELL
+   Replaces the flat material-flow drawing when the browser can
+   render it. The SVG stays as the fallback for reduced-motion,
+   no-JS and no-canvas.
+   ============================================================ */
+.cell-stage{
+  position:relative; aspect-ratio:16/9; min-height:280px;
+  touch-action:none; cursor:grab;
+}
+.cell-stage:active{ cursor:grabbing; }
+.cell-stage canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+.cell-hint{ position:absolute; left:.2rem; bottom:.3rem; color:var(--slate-2); pointer-events:none;
+  transition:opacity 500ms var(--e-out); }
+.cell-hint.gone{ opacity:0; }
+
+.cell-readout{ position:absolute; right:.2rem; top:.2rem; text-align:right; pointer-events:none;
+  display:flex; flex-direction:column; gap:.3rem; }
+.cell-readout .val{ font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:clamp(1.6rem,1rem+2.2vw,2.7rem); line-height:1; letter-spacing:-0.04em;
+  color:var(--ink); transition:color 600ms var(--e-out); }
+.cell-readout.opt .val{ color:var(--sage); }
+.cell-readout .unit{ color:var(--slate); }
+.cell-readout .delta{ color:var(--slate-2); transition:color 600ms var(--e-out); }
+.cell-readout.opt .delta{ color:var(--sage); }
+
+.cell-controls{ display:flex; flex-wrap:wrap; gap:.7rem .9rem; align-items:center;
+  margin-top:.9rem; padding-top:.9rem; border-top:1px solid var(--rule); }
+.cell-ctl-label{ color:var(--slate); margin-right:-.3rem; }
+.cell-spacer{ flex:1; min-width:8px; }
+.cell-seg{ display:inline-flex; border:1px solid var(--rule-2); background:var(--paper-raised); }
+.cell-seg button{ font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em;
+  text-transform:uppercase; padding:.52rem .8rem; background:transparent; color:var(--slate);
+  border:0; cursor:pointer; transition:color 200ms var(--e-out), background 200ms var(--e-out); }
+.cell-seg button + button{ border-left:1px solid var(--rule-2); }
+.cell-seg button:hover{ color:var(--ink-2); }
+.cell-seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); }
+.cell-ghost{ font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em;
+  text-transform:uppercase; padding:.52rem .8rem; background:transparent; color:var(--slate);
+  border:1px solid var(--rule-2); cursor:pointer;
+  transition:color 200ms var(--e-out), border-color 200ms var(--e-out); }
+.cell-ghost:hover{ color:var(--ink); border-color:var(--slate-2); }
+.cell-mode{ margin-top:.75rem; color:var(--slate); }
+
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{
     animation-duration: 1ms !important;
@@ -941,27 +987,52 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div>
           <h3>Factory cell production simulation</h3>
           <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
-          <p class="body">I built a complete 3D factory cell simulating human-robot collaboration, then ran systematic bottleneck analysis against it. The inspection station was the constraint, so the fix was to parallelise inspection and rebalance the buffer ahead of it rather than speed up any single station. Throughput went from 55 to 130 units per hour across the iterations.</p>
+          <p class="body">I built a complete 3D factory cell in Visual Components &mdash; warehouse shelf, twin conveyors, vertical mill, coordinate measuring machine, articulated robot and manual assembly &mdash; then ran it for an hour and measured output at the sink. The first run gave 55 units per hour, and the constraint was not a machine: one operator was busy almost continuously while parts queued on the conveyors and the robot sat idle inside the fence. A second operator took it to 89, a second manual workstation to 100, and a third operator with reordered transport priorities to 130. The mill, the CMM and the robot were never touched.</p>
         </div>
       </div>
 
       <div class="figure">
         <div class="figure-head mono"><span class="dot"></span> Fig. 4.1 / Material flow, baseline vs iteration 3 <span class="grow"></span> <span>Units per hour</span></div>
         <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 440" role="img" aria-label="Diagram comparing a baseline production line constrained at inspection with an optimised line where inspection runs in parallel, and throughput bars showing 55 versus 130 units per hour.">
+          <div id="cellWrap" hidden>
+            <div class="cell-stage" id="cellStage">
+              <canvas id="cellCv"></canvas>
+              <div class="cell-readout mono" id="cellReadout">
+                <span class="val" id="cellRate">55</span>
+                <span class="unit">Units / hour</span>
+                <span class="delta" id="cellDelta">Baseline</span>
+              </div>
+              <div class="cell-hint mono" id="cellHint">Drag to rotate</div>
+            </div>
+            <div class="cell-controls">
+              <span class="cell-ctl-label mono">Optimisation step</span>
+              <div class="cell-seg" role="group" aria-label="Optimisation step">
+                <button type="button" class="cell-stepb" data-step="0" aria-pressed="true">Baseline</button>
+                <button type="button" class="cell-stepb" data-step="1" aria-pressed="false">2 operators</button>
+                <button type="button" class="cell-stepb" data-step="2" aria-pressed="false">+ station</button>
+                <button type="button" class="cell-stepb" data-step="3" aria-pressed="false">3 operators</button>
+              </div>
+              <span class="cell-spacer"></span>
+              <button type="button" class="cell-ghost" id="cellView">Top view</button>
+              <button type="button" class="cell-ghost" id="cellReplay">Replay build</button>
+            </div>
+            <p class="cell-mode mono" id="cellMode">Baseline &middot; one operator</p>
+          </div>
+
+          <svg id="cellFlat" class="dg" viewBox="0 0 920 552" role="img" aria-label="Diagram comparing the baseline factory cell, where one operator at the manual station is the constraint and the robot sits idle, with the optimised cell running three operators across two parallel manual stations, and throughput bars showing 55, 89, 100 and 130 units per hour, a 136 percent improvement.">
             <!-- BASELINE -->
             <text class="fd" x="20" y="24">BASELINE CONFIGURATION</text>
             <path class="ln thin dw" d="M20 34 H 900"/>
 
-            <!-- constraint marker -->
-            <path class="ln-in dw" d="M452 52 L 440 66 M452 52 L 464 66"/>
-            <text class="fd lbl-in" x="474" y="60">CONSTRAINT · INSPECT</text>
+            <!-- the constraint is the manual station, not a machine -->
+            <path class="ln-in dw" d="M780 52 L 768 66 M780 52 L 792 66"/>
+            <text class="fd lbl-in" x="756" y="60" text-anchor="end">CONSTRAINT &#183; MANUAL OPERATIONS</text>
 
-            <g class="hot"><rect class="st dw nd" x="20"  y="76" width="112" height="42"/><text class="fd lbl-ink" x="32" y="102">INFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="196" y="76" width="112" height="42"/><text class="fd lbl-ink" x="208" y="102">ROBOT CELL</text></g>
-            <g class="hot"><rect class="st dw nd" x="372" y="76" width="112" height="42"/><text class="fd lbl-ink" x="384" y="102">INSPECT</text></g>
-            <g class="hot"><rect class="st dw nd" x="548" y="76" width="112" height="42"/><text class="fd lbl-ink" x="560" y="102">BUFFER</text></g>
-            <g class="hot"><rect class="st dw nd" x="724" y="76" width="112" height="42"/><text class="fd lbl-ink" x="736" y="102">OUTFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="20"  y="76" width="112" height="42"/><text class="fd lbl-ink" x="32" y="102">SHELF</text></g>
+            <g class="hot"><rect class="st dw nd" x="196" y="76" width="112" height="42"/><text class="fd lbl-ink" x="208" y="102">INFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="372" y="76" width="112" height="42"/><text class="fd lbl-ink" x="384" y="102">ROBOT CELL</text></g>
+            <g class="hot"><rect class="st dw nd" x="548" y="76" width="112" height="42"/><text class="fd lbl-ink" x="560" y="102">OUTFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="724" y="76" width="112" height="42"/><text class="fd lbl-ink" x="736" y="96">MANUAL</text><text class="fd lbl-ink" x="736" y="110">STATION</text></g>
 
             <path class="ln dashed dw" d="M132 97 H 196"/>
             <path class="ln dashed dw" d="M308 97 H 372"/>
@@ -969,56 +1040,67 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
             <path class="ln dashed dw" d="M660 97 H 724"/>
             <path class="ln dw" d="M836 97 H 890"/>
 
-            <!-- queue build-up marks before inspect -->
+            <!-- work piles up behind the operator; the robot waits -->
             <g class="fd">
-              <circle class="fillsl" cx="322" cy="132" r="2.6"/><circle class="fillsl" cx="334" cy="132" r="2.6"/>
-              <circle class="fillsl" cx="346" cy="132" r="2.6"/><circle class="fillsl" cx="358" cy="132" r="2.6"/>
-              <text x="322" y="150">QUEUE</text>
+              <circle class="fillsl" cx="674" cy="132" r="2.6"/><circle class="fillsl" cx="686" cy="132" r="2.6"/>
+              <circle class="fillsl" cx="698" cy="132" r="2.6"/><circle class="fillsl" cx="710" cy="132" r="2.6"/>
+              <text x="674" y="150">QUEUE</text>
             </g>
+            <text class="fd" x="384" y="150">ROBOT IDLE</text>
+            <text class="fd lbl-in" x="836" y="150" text-anchor="end">1 OPERATOR</text>
 
             <!-- divider -->
-            <path class="ln thin dashed dw" d="M20 186 H 900"/>
-            <text class="fd" x="20" y="178">ITERATION 3 · FLOW OPTIMISED</text>
+            <path class="ln thin dashed dw" d="M20 200 H 900"/>
+            <text class="fd" x="20" y="192">OPTIMISED &#183; 3 OPERATORS, 2 MANUAL STATIONS</text>
 
             <!-- OPTIMISED -->
-            <g class="hot"><rect class="st dw nd" x="20"  y="236" width="112" height="42"/><text class="fd lbl-ink" x="32" y="262">INFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="196" y="236" width="112" height="42"/><text class="fd lbl-ink" x="208" y="262">ROBOT CELL</text></g>
-            <g class="hot"><rect class="st dw nd" x="372" y="206" width="112" height="38"/><text class="fd lbl-sg" x="384" y="230">INSPECT A</text></g>
-            <g class="hot"><rect class="st dw nd" x="372" y="270" width="112" height="38"/><text class="fd lbl-sg" x="384" y="294">INSPECT B</text></g>
-            <g class="hot"><rect class="st dw nd" x="548" y="236" width="112" height="42"/><text class="fd lbl-ink" x="560" y="262">BUFFER</text></g>
-            <g class="hot"><rect class="st dw nd" x="724" y="236" width="112" height="42"/><text class="fd lbl-ink" x="736" y="262">OUTFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="20"  y="250" width="112" height="42"/><text class="fd lbl-ink" x="32" y="276">SHELF</text></g>
+            <g class="hot"><rect class="st dw nd" x="196" y="250" width="112" height="42"/><text class="fd lbl-ink" x="208" y="276">INFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="372" y="250" width="112" height="42"/><text class="fd lbl-ink" x="384" y="276">ROBOT CELL</text></g>
+            <g class="hot"><rect class="st dw nd" x="548" y="250" width="112" height="42"/><text class="fd lbl-ink" x="560" y="276">OUTFEED</text></g>
+            <g class="hot"><rect class="st dw nd" x="724" y="220" width="112" height="38"/><text class="fd lbl-sg" x="736" y="244">STATION A</text></g>
+            <g class="hot"><rect class="st dw nd" x="724" y="284" width="112" height="38"/><text class="fd lbl-sg" x="736" y="308">STATION B</text></g>
 
-            <path class="ln-sg dw" d="M132 257 H 196"/>
-            <path class="ln-sg dw" d="M308 257 H 340 L 340 225 H 372"/>
-            <path class="ln-sg dw" d="M308 257 H 340 L 340 289 H 372"/>
-            <path class="ln-sg dw" d="M484 225 H 516 L 516 257 H 548"/>
-            <path class="ln-sg dw" d="M484 289 H 516 L 516 257 H 548"/>
-            <path class="ln-sg dw" d="M660 257 H 724"/>
-            <path class="ln-sg dw" d="M836 257 H 890"/>
+            <path class="ln-sg dw" d="M132 271 H 196"/>
+            <path class="ln-sg dw" d="M308 271 H 372"/>
+            <path class="ln-sg dw" d="M484 271 H 548"/>
+            <path class="ln-sg dw" d="M660 271 H 692 L 692 239 H 724"/>
+            <path class="ln-sg dw" d="M660 271 H 692 L 692 303 H 724"/>
+            <path class="ln-sg dw" d="M836 239 H 868 L 868 271 H 900"/>
+            <path class="ln-sg dw" d="M836 303 H 868 L 868 271 H 900"/>
 
-            <text class="fd lbl-sg" x="330" y="330">PARALLEL INSPECTION · CONSTRAINT REMOVED</text>
+            <text class="fd lbl-sg" x="484" y="340">STAFFING RAISED &#183; CONSTRAINT REMOVED</text>
 
-            <!-- throughput bars -->
-            <path class="ln thin dw" d="M20 356 H 900"/>
-            <text class="fd" x="20" y="380">THROUGHPUT</text>
+            <!-- throughput, all four measured states -->
+            <path class="ln thin dw" d="M20 372 H 900"/>
+            <text class="fd" x="20" y="396">THROUGHPUT &#183; UNITS PER HOUR</text>
 
-            <rect class="fillsl fd" x="150" y="370" width="256" height="8"/>
-            <text class="fd" x="416" y="379"><tspan class="lbl-ink">55</tspan> UNITS/H · BASELINE</text>
+            <text class="fd" x="20" y="425">BASELINE</text>
+            <rect class="fillsl fd" x="200" y="418" width="279" height="8"/>
+            <text class="fd lbl-ink" x="489" y="426">55</text>
 
-            <rect class="fillsg fd" style="--dl:420ms" x="150" y="398" width="604" height="8"/>
-            <text class="fd" style="--dl:420ms" x="764" y="407"><tspan class="lbl-sg">130</tspan> UNITS/H</text>
+            <text class="fd" style="--dl:180ms" x="20" y="449">+2ND OPERATOR</text>
+            <rect class="fillsl fd" style="--dl:180ms" x="200" y="442" width="452" height="8"/>
+            <text class="fd lbl-ink" style="--dl:180ms" x="662" y="450">89</text>
 
-            <path class="ln-in dw" style="--dl:700ms" d="M406 366 V 412 M754 366 V 412"/>
-            <path class="ln-in dw" style="--dl:820ms" d="M406 424 H 754"/>
-            <text class="fd lbl-in" style="--dl:900ms" x="516" y="438">+136%</text>
+            <text class="fd" style="--dl:340ms" x="20" y="473">+2ND STATION</text>
+            <rect class="fillsl fd" style="--dl:340ms" x="200" y="466" width="508" height="8"/>
+            <text class="fd lbl-ink" style="--dl:340ms" x="718" y="474">100</text>
 
-            <!-- pulses -->
+            <text class="fd" style="--dl:500ms" x="20" y="497">+3RD OPERATOR</text>
+            <rect class="fillsg fd" style="--dl:500ms" x="200" y="490" width="660" height="8"/>
+            <text class="fd lbl-sg" style="--dl:500ms" x="870" y="498">130</text>
+
+            <path class="ln-in dw" style="--dl:700ms" d="M479 504 V 516 M860 504 V 516"/>
+            <path class="ln-in dw" style="--dl:820ms" d="M479 522 H 860"/>
+            <text class="fd lbl-in" style="--dl:900ms" x="670" y="540" text-anchor="middle">+136%</text>
+
+            <!-- pulses: slow and stalled at baseline, quick once staffed -->
             <path class="flow" style="--sp:6.5s" d="M132 97 H 196"/>
-            <path class="flow" style="--sp:6.5s;--dl:1100ms" d="M484 97 H 548"/>
-            <path class="flow" style="--sp:3.1s" d="M132 257 H 196"/>
-            <path class="flow" style="--sp:3.1s;--dl:600ms" d="M308 257 H 340 L 340 225 H 372"/>
-            <path class="flow" style="--sp:3.1s;--dl:1200ms" d="M308 257 H 340 L 340 289 H 372"/>
-            <path class="flow" style="--sp:3.1s;--dl:1800ms" d="M660 257 H 724"/>
+            <path class="flow" style="--sp:6.5s;--dl:1100ms" d="M660 97 H 724"/>
+            <path class="flow" style="--sp:3.1s" d="M132 271 H 196"/>
+            <path class="flow" style="--sp:3.1s;--dl:600ms" d="M660 271 H 692 L 692 239 H 724"/>
+            <path class="flow" style="--sp:3.1s;--dl:1200ms" d="M660 271 H 692 L 692 303 H 724"/>
           </svg>
         </div>
       </div>
@@ -2287,6 +2369,648 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     if (!T || settle < 3 || Math.abs(h - T.H) > 2){ buildThread(); }
     if (++settle > 6) clearInterval(settleTimer);
   }, 900);
+
+})();
+</script>
+
+<script>
+(function(){
+
+(() => {
+  "use strict";
+
+  const cv     = document.getElementById('cellCv');
+  const stage  = document.getElementById('cellStage');
+  const ctx    = cv.getContext('2d');
+  const hint   = document.getElementById('cellHint');
+  const rateEl = document.getElementById('cellRate');
+  const readout= document.getElementById('cellReadout');
+  const modeEl = document.getElementById('cellMode');
+  const deltaEl= document.getElementById('cellDelta');
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- palette, read live from the CSS tokens ---------- */
+  let P = {};
+  function palette(){
+    const s = getComputedStyle(document.documentElement);
+    const g = n => s.getPropertyValue(n).trim();
+    P = {
+      ink: g('--ink'), ink2: g('--ink-2'),
+      slate: g('--slate'), slate2: g('--slate-2'),
+      rule: g('--rule'), rule2: g('--rule-2'),
+      indigo: g('--indigo'), indigo2: g('--indigo-2'),
+      sage: g('--sage'), sage2: g('--sage-2')
+    };
+  }
+  palette();
+
+  /* ---------- canvas sizing ---------- */
+  let W = 0, H = 0, DPR = 1;
+  function resize(){
+    const r = stage.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    cv.width  = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  new ResizeObserver(resize).observe(stage);
+  resize();
+
+  /* ============================================================
+     GEOMETRY - a box is 8 corners and 12 edges. That is all a
+     wireframe drawing ever is.
+     ============================================================ */
+  function boxEdges(cx, cy, cz, w, h, d){
+    const x0=cx-w/2, x1=cx+w/2, y0=cy, y1=cy+h, z0=cz-d/2, z1=cz+d/2;
+    const v = [
+      [x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],
+      [x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]
+    ];
+    const e = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    return e.map(([a,b]) => [v[a], v[b]]);
+  }
+
+  /* ---------- the real cell, from the report ----------
+     Plan view: x = left/right, z = front/back, y = up. Component names and
+     positions are traced from Fig. 23 (component list), Fig. 32 (initial flow
+     layout) and Fig. 37 (final layout) of the ISAN3110 final report. */
+  const XOFF = 0, ZOFF = 0;               // auto-fit handles centring
+
+  const MACHINES = {
+    shelf:  { x:-248, z:-92,  w:46,  h:92,  d:118, label:'WAREHOUSE SHELF',  row:0 },
+    convIn: { x:-24,  z:-30,  w:250, h:20,  d:24,  label:'INFEED',  row:1 },
+    convOut:{ x:-24,  z: 26,  w:250, h:20,  d:24,  label:'OUTFEED', row:2 },
+    mill:   { x: 192, z:-88,  w:88,  h:104, d:80,  label:'VERTICAL MILL',    row:0 },
+    robot:  { x: 176, z: 6,   w:46,  h:82,  d:52,  label:'ROBOT',            row:1 },
+    cmm:    { x: 206, z: 92,  w:78,  h:86,  d:74,  label:'CMM',              row:2 },
+    ws1:    { x:-124, z: 132, w:86,  h:38,  d:54,  label:'STATION 1', row:1, hot:1 },
+    ws2:    { x:-124, z: 206, w:86,  h:38,  d:54,  label:'STATION 2', row:2, add:1 },
+    sink:   { x:-272, z: 186, w:40,  h:16,  d:40,  label:'SINK',             row:0 }
+  };
+  const ORDER = ['shelf','convIn','convOut','mill','robot','cmm','ws1','ws2','sink'];
+
+  /* safety fence around the robot cell (Fig. 37) */
+  const FENCE = { x0:96, x1:288, z0:-158, z1:154, h:56 };
+
+  /* the four measured states, report pp.32-34 */
+  const STEPS = [
+    { rate:55,  ops:1, ws:1, name:'Baseline \u00B7 one operator' },
+    { rate:89,  ops:2, ws:1, name:'Second operator added' },
+    { rate:100, ops:2, ws:2, name:'Second manual workstation added' },
+    { rate:130, ops:3, ws:2, name:'Third operator \u00B7 priorities tuned' }
+  ];
+
+  /* ---------- state ---------- */
+  let stepF = 0, stepTarget = 0;
+  let rotY = -0.62, rotX = 0.86;
+  let dragRotY = 0, dragRotX = 0;
+  let dragging = false, lastX = 0, lastY = 0;
+  let idle = 0;
+  let build = reduce ? 1 : 0;
+  let shownRate = 55;
+  let phase = 0;
+  let rotYT = -0.62, rotXT = 0.86;   // camera targets, eased toward
+  const VIEWS = {
+    iso: { y: -0.62, x: 0.86, label: 'Top view'  },
+    top: { y:  0.00, x: 1.50, label: '3/4 view' }
+  };
+  let view = 'iso';
+
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const ease = t => t<0 ? 0 : t>1 ? 1 : 1 - Math.pow(1-t, 3);
+
+  // piecewise interpolation across the four measured outputs
+  function rateAt(f){
+    const i = Math.min(STEPS.length-2, Math.floor(f));
+    return lerp(STEPS[i].rate, STEPS[i+1].rate, clamp01(f - i));
+  }
+  const ws2Alpha = () => clamp01(stepF - 1);          // station 2 arrives at step 2
+  function opAlpha(i){
+    if (i === 0) return 1;
+    if (i === 1) return clamp01(stepF);               // 2nd operator at step 1
+    return clamp01(stepF - 2);                        // 3rd operator at step 3
+  }
+
+  /* blend the two accents as the constraint is worked out of the system */
+  function hexLerp(a, b, t){
+    const p = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+    if (a[0] !== '#' || b[0] !== '#') return b;
+    const A = p(a), B = p(b);
+    return 'rgb(' + A.map((v,i) => Math.round(lerp(v, B[i], t))).join(',') + ')';
+  }
+
+  /* ============================================================
+     PROJECTION - rotate the point, then divide by distance.
+     Things further away get smaller. That is the whole trick.
+     ============================================================ */
+  const DIST = 1150;
+  function project(p, scale, ox, oy){
+    const ry = rotY + dragRotY, rx = rotX + dragRotX;
+    const cy = Math.cos(ry), sy = Math.sin(ry);
+    const xx = p[0] + XOFF, zz = p[2] + ZOFF;
+    let x = xx*cy - zz*sy;
+    let z = xx*sy + zz*cy;
+    const cx = Math.cos(rx), sx = Math.sin(rx);
+    const y = p[1]*cx - z*sx;
+    z       = p[1]*sx + z*cx;
+    const f = DIST / (DIST + z);
+    return { x: ox + x*f*scale, y: oy - y*f*scale, z, f };
+  }
+
+  /* ---------- material flow: shelf -> conveyor -> cell -> conveyor
+                -> manual station -> sink. Two branches once the second
+                station exists. ---------- */
+  function flowPath(branch){
+    const wsZ = branch === 1 ? MACHINES.ws2.z : MACHINES.ws1.z;
+    return [
+      [-248, 8, -92], [-190, 8, -58], [-149, 8, -30], [ 101, 8, -30],
+      [ 150, 8, -62], [ 192, 8, -88], [ 182, 8,  10], [ 206, 8,  92],
+      [ 146, 8,  50], [ 101, 8,  26], [-149, 8,  26], [-124, 8, wsZ],
+      [-272, 8, 186]
+    ];
+  }
+
+  /* the operators' own loop: shelf, conveyors, stations, sink */
+  const HUMAN = [
+    [-248,0,-92], [-190,0,-54], [-149,0,-30], [-146,0, 26],
+    [-124,0,132], [-124,0,206], [-230,0,186], [-248,0,-92]
+  ];
+
+  function pathPoint(pts, t){
+    const seg = (pts.length-1) * Math.min(0.9999, Math.max(0,t));
+    const i = Math.floor(seg), f = seg - i;
+    const a = pts[i], b = pts[i+1];
+    return [ lerp(a[0],b[0],f), lerp(a[1],b[1],f), lerp(a[2],b[2],f) ];
+  }
+
+  const PARTS = Array.from({length: 26}, (_, i) => ({ t: i/26, slot: i/26, branch: i % 2 }));
+  const OPS   = [0, 0.34, 0.67].map(t => ({ t }));
+
+  // The report's constraint: the manual station, not the machines. Parts crawl
+  // through it at baseline, so the backlog sits there and the robot idles.
+  function speedAt(t){
+    const inZone = t > 0.80 && t < 0.94;
+    const slow = inZone ? lerp(0.16, 1, clamp01(stepF/3)) : 1;
+    return slow;
+  }
+
+  /* ============================================================
+     DRAW
+     ============================================================ */
+  function line(a, b, color, width, alpha){
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function monoFont(){
+    return `500 10px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
+  }
+
+  /* The robot is the one component whose shape carries meaning, so it is
+     drawn as an articulated arm rather than a box: floor plinth, column,
+     shoulder, upper arm and forearm reaching toward the CMM, and a gripper.
+     Segment lengths are chosen to sit inside the same footprint as the
+     bounding box used for fitting. */
+  function robotArm(m){
+    const x = m.x, z = m.z, s = m.h / 60;      // scale from the nominal height
+    const P0 = [x, 0,        z];               // base
+    const P1 = [x, 34*s,     z];               // shoulder
+    const P2 = [x, 60*s,     z + 24*s];        // elbow
+    const P3 = [x, 42*s,     z + 48*s];        // wrist
+    const plinth = 15*s;
+    return {
+      plinth: [
+        [[x-plinth,0,z-plinth],[x+plinth,0,z-plinth]],
+        [[x+plinth,0,z-plinth],[x+plinth,0,z+plinth]],
+        [[x+plinth,0,z+plinth],[x-plinth,0,z+plinth]],
+        [[x-plinth,0,z+plinth],[x-plinth,0,z-plinth]],
+        [[x-plinth,10*s,z-plinth],[x+plinth,10*s,z-plinth]],
+        [[x+plinth,10*s,z-plinth],[x+plinth,10*s,z+plinth]],
+        [[x+plinth,10*s,z+plinth],[x-plinth,10*s,z+plinth]],
+        [[x-plinth,10*s,z+plinth],[x-plinth,10*s,z-plinth]],
+        [[x-plinth,0,z-plinth],[x-plinth,10*s,z-plinth]],
+        [[x+plinth,0,z-plinth],[x+plinth,10*s,z-plinth]],
+        [[x+plinth,0,z+plinth],[x+plinth,10*s,z+plinth]],
+        [[x-plinth,0,z+plinth],[x-plinth,10*s,z+plinth]]
+      ],
+      arm: [[P0,P1],[P1,P2],[P2,P3]],
+      joints: [P1, P2],
+      grip: [
+        [P3, [x-7*s, 36*s, z+56*s]],
+        [P3, [x+7*s, 36*s, z+56*s]]
+      ],
+      top: P2
+    };
+  }
+
+  function drawRobot(m, pr, col, alpha, reveal){
+    const R = robotArm(m);
+    R.plinth.forEach(([a,b], i) => {
+      if (reveal * 12 - i * 0.55 <= 0) return;
+      line(pr(a), pr(b), col, 1, alpha * 0.6);
+    });
+    if (reveal < 0.45) return;
+    const t = clamp01((reveal - 0.45) / 0.55);
+    R.arm.forEach(([a,b], i) => {
+      const seg = clamp01(t * 3 - i);
+      if (seg <= 0) return;
+      const A = pr(a), B = pr(b);
+      line(A, { x: lerp(A.x,B.x,seg), y: lerp(A.y,B.y,seg) }, col, 2.4, alpha);
+    });
+    if (t < 0.98) return;
+    R.grip.forEach(([a,b]) => line(pr(a), pr(b), col, 1.8, alpha));
+    ctx.fillStyle = col;
+    ctx.globalAlpha = alpha;
+    R.joints.forEach(j => {
+      const q = pr(j);
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, 3.6 * q.f, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  /* Fit the whole plan to the stage every frame. Projecting at unit scale
+     gives normalised coordinates, so the bounding box scales linearly - which
+     means this keeps working while the viewer drags the model around. */
+  function fitView(){
+    const pts = [];
+    ORDER.forEach(k => {
+      const m = MACHINES[k];
+      if (m.add && ws2Alpha() < 0.02) return;
+      if (k === 'robot'){
+        const R = robotArm(m);
+        R.plinth.forEach(seg => pts.push(seg[0], seg[1]));
+        R.arm.forEach(seg => pts.push(seg[0], seg[1]));
+        R.grip.forEach(seg => pts.push(seg[1]));
+        return;
+      }
+      const hx = m.w/2, hz = m.d/2;
+      pts.push([m.x-hx, 0, m.z-hz], [m.x+hx, 0, m.z-hz],
+               [m.x+hx, 0, m.z+hz], [m.x-hx, 0, m.z+hz],
+               [m.x-hx, m.h, m.z-hz], [m.x+hx, m.h, m.z-hz],
+               [m.x+hx, m.h, m.z+hz], [m.x-hx, m.h, m.z+hz]);
+    });
+    const F = FENCE;
+    [[F.x0,F.z0],[F.x1,F.z0],[F.x1,F.z1],[F.x0,F.z1]].forEach(c => {
+      pts.push([c[0], 0, c[1]], [c[0], F.h, c[1]]);
+    });
+
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (let i = 0; i < pts.length; i++){
+      const q = project(pts[i], 1, 0, 0);
+      if (q.x < minX) minX = q.x;
+      if (q.x > maxX) maxX = q.x;
+      if (q.y < minY) minY = q.y;
+      if (q.y > maxY) maxY = q.y;
+    }
+
+    const padX   = Math.max(18, W * 0.03);
+    const padTop = H * 0.21;                 // the callout band lives up here
+    const padBot = Math.max(26, H * 0.06);
+    const bw = Math.max(1, maxX - minX), bh = Math.max(1, maxY - minY);
+    const scale = Math.min((W - padX*2) / bw, (H - padTop - padBot) / bh);
+    return {
+      scale: scale,
+      ox: padX - minX*scale + (W - padX*2 - bw*scale) / 2,
+      oy: padTop - minY*scale + (H - padTop - padBot - bh*scale) / 2
+    };
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+
+    const V = fitView();
+    const scale = V.scale, ox = V.ox, oy = V.oy;
+    const pr = p => project(p, scale, ox, oy);
+
+    const t3 = clamp01(stepF / 3);
+    const accent  = hexLerp(P.indigo,  P.sage,  t3);
+    const accent2 = hexLerp(P.indigo2, P.sage2, t3);
+
+    /* --- floor grid --- */
+    const GX = 360, GZ = 240, STEP = 40;
+    for (let x = -GX; x <= GX; x += STEP)
+      line(pr([x,0,-GZ]), pr([x,0,GZ]), P.rule2, 1, 0.42 * build);
+    for (let z = -GZ; z <= GZ; z += STEP)
+      line(pr([-GX,0,z]), pr([GX,0,z]), P.rule2, 1, 0.42 * build);
+
+    /* --- safety fence around the robot cell --- */
+    if (build > 0.55){
+      const a = clamp01((build - 0.55) / 0.45) * 0.62;
+      const F = FENCE, corners = [
+        [F.x0,F.z0],[F.x1,F.z0],[F.x1,F.z1],[F.x0,F.z1],[F.x0,F.z0]
+      ];
+      for (let i = 0; i < 4; i++){
+        const [x0,z0] = corners[i], [x1,z1] = corners[i+1];
+        line(pr([x0,F.h,z0]), pr([x1,F.h,z1]), P.slate2, 1, a);       // top rail
+        line(pr([x0,3,z0]),   pr([x1,3,z1]),   P.slate2, 1, a*0.85);  // ground line
+        for (let k = 0; k <= 5; k++){                                  // posts
+          const px = lerp(x0,x1,k/5), pz = lerp(z0,z1,k/5);
+          line(pr([px,0,pz]), pr([px,F.h,pz]), P.slate2, 1, a*0.6);
+        }
+      }
+    }
+
+    /* --- material flow lines --- */
+    for (let b = 0; b < 2; b++){
+      if (b === 1 && ws2Alpha() < 0.02) continue;
+      ctx.strokeStyle = accent2;
+      ctx.globalAlpha = (b === 1 ? ws2Alpha() : 1) * 0.5 * build;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([7, 6]);
+      ctx.beginPath();
+      flowPath(b).forEach((p, i) => {
+        const q = pr(p);
+        i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+    /* --- components --- */
+    const labels = [];
+    ORDER.forEach((k, ki) => {
+      const m = MACHINES[k];
+      const vis = m.add ? ws2Alpha() : 1;
+      if (vis < 0.02) return;
+
+      const local = clamp01((build * ORDER.length) - ki);
+      if (local <= 0) return;
+
+      const isHot = m.hot && stepF < 1.4;
+      const col = isHot ? accent : P.ink2;
+      const wid = isHot ? 1.6 : 1.1;
+      const al  = vis * ease(local) * (isHot ? 0.95 : 0.7);
+
+      if (k === 'robot'){
+        drawRobot(m, pr, col, al, ease(local));
+      } else {
+        boxEdges(m.x, 0, m.z, m.w, m.h, m.d).forEach(([p, q], ei) => {
+          const shown = clamp01(ease(local) * 12 - ei * 0.55);
+          if (shown <= 0) return;
+          const A = pr(p), B = pr(q);
+          line(A, { x: lerp(A.x,B.x,shown), y: lerp(A.y,B.y,shown) }, col, wid, al);
+        });
+      }
+
+      if (local > 0.85){
+        const anc = pr(k === 'robot' ? robotArm(m).top : [m.x, m.h, m.z]);
+        labels.push({ x: anc.x, y: anc.y,
+                      text: m.label, hot: isHot, row: m.row,
+                      alpha: vis * (local-0.85)/0.15 });
+      }
+    });
+
+    /* --- parts in flow --- */
+    if (build > 0.9 && !reduce){
+      PARTS.forEach(pt => {
+        const useB = (ws2Alpha() > 0.5) ? pt.branch : 0;
+        const p = pathPoint(flowPath(useB), pt.t);
+        const q = pr([p[0], p[1] + 4, p[2]]);
+        ctx.fillStyle = accent;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.arc(q.x, q.y, 2.8 * q.f, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    /* --- operators: 1, 2 then 3. The whole optimisation, visible. --- */
+    if (build > 0.95){
+      OPS.forEach((op, i) => {
+        const a = opAlpha(i);
+        if (a < 0.02) return;
+        const p = pathPoint(HUMAN, op.t);
+        const base = pr([p[0], 0, p[2]]);
+        const head = pr([p[0], 52, p[2]]);
+        ctx.strokeStyle = accent;
+        ctx.globalAlpha = a;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(base.x, base.y);
+        ctx.lineTo(head.x, head.y);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.beginPath();                                  // ground tick
+        ctx.moveTo(base.x - 5*base.f, base.y);
+        ctx.lineTo(base.x + 5*base.f, base.y);
+        ctx.stroke();
+        ctx.fillStyle = accent;
+        ctx.beginPath();
+        ctx.arc(head.x, head.y - 5*head.f, 4 * head.f, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    /* --- callout band --- */
+    let maxRow = 0, bandBottom = 0;
+    ctx.font = monoFont();
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '1.4px';
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'center';
+    // Callouts: first pull every label inside the frame so nothing can be
+    // clipped when the reader rotates the model, then pack them into rows so
+    // two labels can never sit on top of each other.
+    const EDGE = 10, BAND0 = 14;
+    // One row per label is always available, so two callouts can never land on
+    // top of each other however the reader turns the model. Rows are only used
+    // as they are needed, so the band stays shallow when things are spread out.
+    const ROWS = Math.max(1, labels.length);
+    const ROWH = Math.min(22, Math.max(12, (H * 0.45) / ROWS));
+    labels.forEach(L => {
+      L.half = ctx.measureText(L.text).width / 2 + 8;
+      L.lx = Math.max(L.half + EDGE, Math.min(W - L.half - EDGE, L.x));
+    });
+    const rowRight = new Array(ROWS).fill(-1e9);
+    labels.sort((a,b) => a.lx - b.lx).forEach(L => {
+      let best = 0;
+      for (let r = 0; r < ROWS; r++){
+        if ((L.lx - L.half) - rowRight[r] >= 0){ best = r; break; }
+        best = r;
+      }
+      rowRight[best] = L.lx + L.half;
+      L.row = best;
+      if (best > maxRow) maxRow = best;
+    });
+    bandBottom = BAND0 + maxRow * ROWH + 12;
+    labels.forEach(L => {
+      const bandY = BAND0 + L.row * ROWH;
+      ctx.globalAlpha = 0.9 * L.alpha;
+      ctx.strokeStyle = L.hot ? accent : P.rule2;
+      ctx.lineWidth = 1;
+      if (L.y - 12 > bandY){                       // room for a leader
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(L.x, L.y - 5);
+        ctx.lineTo(L.x, bandY + 18);
+        ctx.lineTo(L.lx, bandY + 7);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(L.lx - 4, bandY + 7);
+        ctx.lineTo(L.lx + 4, bandY + 7);
+        ctx.stroke();
+      }
+      ctx.fillStyle = L.hot ? accent : P.slate;
+      ctx.fillText(L.text, L.lx, bandY);
+      ctx.globalAlpha = 1;
+    });
+
+    /* --- constraint call-out, baseline only --- */
+    if (stepF < 1.2 && build > 0.95){
+      const m = MACHINES.ws1;
+      const b = pr([m.x, 0, m.z + m.d/2]);
+      ctx.globalAlpha = clamp01((1.2 - stepF) / 1.2);
+      ctx.fillStyle = accent;
+      const cw = ctx.measureText('CONSTRAINT \u00B7 MANUAL OPERATIONS').width / 2 + 10;
+      ctx.fillText('CONSTRAINT \u00B7 MANUAL OPERATIONS',
+                   Math.max(cw, Math.min(W - cw, b.x + 96)),
+                   Math.max(bandBottom + 14, Math.min(H - 10, b.y + 34)));
+      ctx.globalAlpha = 1;
+    }
+    ctx.textAlign = 'left';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  }
+
+  /* ============================================================
+     LOOP
+     ============================================================ */
+  let last = performance.now();
+  function frame(now){
+    const dt = Math.min(64, now - last) / 1000;
+    last = now;
+
+    if (build < 1) build = Math.min(1, build + dt / 1.5);
+    if (stepF !== stepTarget){
+      const d = Math.sign(stepTarget - stepF) * dt / 0.75;
+      stepF = Math.abs(stepTarget - stepF) <= Math.abs(d) ? stepTarget : stepF + d;
+    }
+
+    // The drawing holds still. It only moves when the reader moves it, or
+    // when they switch view - nothing drifts on its own.
+    if (rotY !== rotYT || rotX !== rotXT){
+      const k = Math.min(1, dt * 4.5);
+      rotY += (rotYT - rotY) * k;
+      rotX += (rotXT - rotX) * k;
+      if (Math.abs(rotYT - rotY) < 0.001) rotY = rotYT;
+      if (Math.abs(rotXT - rotX) < 0.001) rotX = rotXT;
+    }
+
+    if (!reduce){
+      // line speed tracks the measured output at this step
+      const boost = rateAt(stepF) / 55;
+      phase += dt * 0.055 * boost;
+      if (phase > 1) phase -= 1;
+      PARTS.forEach(p => {
+        p.t += dt * 0.055 * speedAt(p.t) * boost;
+        if (p.t > 1) p.t -= 1;
+        // Relieving the constraint dissolves the backlog: parts ease back to
+        // even spacing instead of carrying the baseline queue forever.
+        const relief = clamp01(stepF / 3);
+        if (relief > 0.02){
+          const ideal = (phase + p.slot) % 1;
+          let d = ideal - p.t;
+          if (d >  0.5) d -= 1;
+          if (d < -0.5) d += 1;
+          p.t += d * Math.min(1, dt * 0.9 * relief);
+          if (p.t > 1) p.t -= 1;
+          if (p.t < 0) p.t += 1;
+        }
+      });
+      OPS.forEach((o, i) => {
+        o.t += dt * 0.055 * (0.9 + i * 0.16) * boost;
+        if (o.t > 1) o.t -= 1;
+      });
+    }
+
+    const target = rateAt(stepF);
+    shownRate += (target - shownRate) * Math.min(1, dt * 4);
+    rateEl.textContent = Math.round(shownRate);
+
+    draw();
+    requestAnimationFrame(frame);
+  }
+  if (!reduce && cv.getContext) {
+    document.getElementById('cellWrap').hidden = false;
+    var flat = document.getElementById('cellFlat');
+    if (flat) flat.hidden = true;
+    resize();
+    requestAnimationFrame(frame);
+  }
+
+  /* ============================================================
+     INPUT
+     ============================================================ */
+  stage.addEventListener('pointerdown', e => {
+    dragging = true; idle = 0;
+    lastX = e.clientX; lastY = e.clientY;
+    hint.classList.add('gone');
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dragRotY += (e.clientX - lastX) * 0.007;
+    dragRotX += (e.clientY - lastY) * 0.004;
+    dragRotX = Math.max(-0.25, Math.min(1.15, rotX + dragRotX)) - rotX;
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  const release = e => {
+    dragging = false; idle = 0;
+    try { stage.releasePointerCapture(e.pointerId); } catch(_){}
+  };
+  stage.addEventListener('pointerup', release);
+  stage.addEventListener('pointercancel', release);
+
+  /* ---------- layout toggle ---------- */
+  const stepBtns = Array.prototype.slice.call(document.querySelectorAll('.cell-stepb'));
+  function setStep(n){
+    stepTarget = n;
+    stepBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.step === n)));
+    modeEl.textContent = STEPS[n].name;
+    readout.classList.toggle('opt', n === STEPS.length - 1);
+    const pct = Math.round((STEPS[n].rate / STEPS[0].rate - 1) * 100);
+    deltaEl.textContent = n === 0 ? 'Baseline' : '+' + pct + '% vs baseline';
+  }
+  stepBtns.forEach(b => b.addEventListener('click', () => setStep(+b.dataset.step)));
+
+  /* ---------- view toggle: 3/4 or straight down ---------- */
+  const bView = document.getElementById('cellView');
+  if (bView) bView.addEventListener('click', () => {
+    view = (view === 'iso') ? 'top' : 'iso';
+    rotYT = VIEWS[view].y;
+    rotXT = VIEWS[view].x;
+    dragRotY = 0; dragRotX = 0;          // a named view is a clean slate
+    bView.textContent = VIEWS[view].label;
+    idle = 0;
+  });
+
+  /* ---------- replay ---------- */
+  document.getElementById('cellReplay').addEventListener('click', () => {
+    build = 0;
+    PARTS.forEach((p,i) => p.t = i / PARTS.length);
+    OPS.forEach((o,i) => o.t = [0, 0.34, 0.67][i]);
+  });
+
+  /* ---------- follow the page's own theme toggle ---------- */
+  new MutationObserver(palette).observe(document.documentElement,
+    { attributes:true, attributeFilter:['data-theme'] });
+
+  setTimeout(() => hint.classList.add('gone'), 9000);
+})();
 
 })();
 </script>
