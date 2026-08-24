@@ -689,8 +689,20 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
    render it. The SVG stays as the fallback for reduced-motion,
    no-JS and no-canvas.
    ============================================================ */
+/* `.figure svg.dg{display:block}` outranks the browser's [hidden] rule, so
+   the flat fallback kept rendering under the canvas even when hidden. This
+   puts it back under our control. */
+.figure svg.dg[hidden]{ display:none; }
+
 .cell-stage{
-  position:relative; aspect-ratio:16/9; min-height:280px;
+  position:relative;
+  /* A wide letterbox suits a floor plan, and the cap keeps the whole
+     figure - drawing plus its controls - inside one screen at 100% zoom.
+     16/9 at full width was 600px tall on its own, which pushed the step
+     buttons below the fold. */
+  aspect-ratio:2.4/1;
+  min-height:260px;
+  max-height:min(48vh, 430px);
   touch-action:none; cursor:grab;
 }
 .cell-stage:active{ cursor:grabbing; }
@@ -2472,6 +2484,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   let build = reduce ? 1 : 0;
   let shownRate = 55;
   let phase = 0;
+  let lastBand = 0;      // measured depth of the callout band
   let rotYT = -0.62, rotXT = 0.86;   // camera targets, eased toward
   const VIEWS = {
     iso: { y: -0.62, x: 0.86, label: 'Top view'  },
@@ -2676,8 +2689,10 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     }
 
     const padX   = Math.max(18, W * 0.03);
-    const padTop = H * 0.21;                 // the callout band lives up here
-    const padBot = Math.max(26, H * 0.06);
+    // Reserve exactly what the callouts needed last frame rather than a flat
+    // fraction: on a short stage a fixed reserve starves the drawing.
+    const padTop = Math.max(H * 0.13, Math.min(H * 0.34, lastBand + 14));
+    const padBot = Math.max(18, H * 0.05);
     const bw = Math.max(1, maxX - minX), bh = Math.max(1, maxY - minY);
     const scale = Math.min((W - padX*2) / bw, (H - padTop - padBot) / bh);
     return {
@@ -2830,7 +2845,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     // top of each other however the reader turns the model. Rows are only used
     // as they are needed, so the band stays shallow when things are spread out.
     const ROWS = Math.max(1, labels.length);
-    const ROWH = Math.min(22, Math.max(12, (H * 0.45) / ROWS));
+    const ROWH = Math.min(20, Math.max(11, (H * 0.34) / ROWS));
     labels.forEach(L => {
       L.half = ctx.measureText(L.text).width / 2 + 8;
       L.lx = Math.max(L.half + EDGE, Math.min(W - L.half - EDGE, L.x));
@@ -2847,6 +2862,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       if (best > maxRow) maxRow = best;
     });
     bandBottom = BAND0 + maxRow * ROWH + 12;
+    lastBand = bandBottom;
     labels.forEach(L => {
       const bandY = BAND0 + L.row * ROWH;
       ctx.globalAlpha = 0.9 * L.alpha;
@@ -2947,7 +2963,9 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
   if (!reduce && cv.getContext) {
     document.getElementById('cellWrap').hidden = false;
     var flat = document.getElementById('cellFlat');
-    if (flat) flat.hidden = true;
+    // `hidden` is an HTMLElement property; <svg> is an SVGElement and does not
+    // implement it, so assigning it silently does nothing. Set the attribute.
+    if (flat) flat.setAttribute('hidden', '');
     resize();
     requestAnimationFrame(frame);
   }
