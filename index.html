@@ -849,7 +849,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div><dt class="mono">Current</dt><dd>Quality Team Lead, SkillCat</dd></div>
       <div><dt class="mono">Certification</dt><dd>IPMA Foundation, May 2026</dd></div>
       <div><dt class="mono">Academic</dt><dd>M.Sc. IEM, GPA 4.09 / 5 · 75 ECTS</dd></div>
-      <div><dt class="mono">Open to</dt><dd>Risk, Project, Program, Operations</dd></div>
+      <div><dt class="mono">Open to</dt><dd>Business Operations, Risk, Project, Program</dd></div>
     </dl>
   </div>
 </section>
@@ -1011,14 +1011,99 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div class="sec-tag mono"><i></i>ST.04 / Case studies</div>
       <div>
         <h2>Four systems, measured.</h2>
-        <p class="sub">A simulated factory cell, a live certification cohort, a packaging configuration for 400 SKUs, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
+        <p class="sub">A live certification cohort, a simulated factory cell, a packaging configuration for 400 SKUs, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
       </div>
     </div>
 
-    <!-- ---- CASE 1 : FACTORY CELL ---- -->
+    <!-- ---- CASE 1 : SKILLMAP TRACKER ---- -->
+    <article class="case" id="case-cohort">
+      <div class="case-top">
+        <div class="case-id mono"><b>Case 01</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
+        <div>
+          <h3>SkillMap Cohort 1 Tracker</h3>
+          <div class="ctx mono">79 candidates · 10-week HVAC certification · weekly risk triage</div>
+          <p class="body">Weekly risk review on this cohort began as a manual pass across all 79 enrolled candidates. I replaced it with a 47-column tracker in Google Sheets, driven by Apps Script, that scores every candidate against rule-based criteria and classifies them On Track, At Risk, or Not On Track. The weekly pass now starts from a shortlist of 33 flagged cases rather than the full roster, and the same rules generate the end-of-week escalation report that goes to management.</p>
+          <p class="body">Flagging a case is one decision. Acting on the flag is a different one. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
+        <div class="figure-body">
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph, a weekly pass-rate sparkline, and a risk triage bar splitting the 79 candidates into 46 classified On Track and 33 flagged for weekly review.">
+            <!-- enrolled -->
+            <g class="hot"><rect class="st dw nd" x="20" y="140" width="150" height="60"/></g>
+            <text class="fd big" x="34" y="170">79</text>
+            <text class="fd" x="34" y="188">ENROLLED</text>
+
+            <path class="ln-ink dw" d="M170 170 H 250"/>
+            <text class="fd" x="182" y="160">−16</text>
+
+            <!-- active -->
+            <g class="hot"><rect class="st dw nd" x="250" y="140" width="170" height="60"/></g>
+            <text class="fd big" x="264" y="170">63</text>
+            <text class="fd" x="264" y="188">ACTIVE · WEEK 10/10</text>
+
+            <!-- fan out -->
+            <path class="ln-sg dw" d="M420 170 C 470 170, 480 92, 540 92"/>
+            <path class="ln-in dw" d="M420 170 C 470 170, 480 176, 540 176"/>
+            <path class="ln dw"    d="M420 170 C 470 170, 480 260, 540 260"/>
+
+            <!-- status bars -->
+            <rect class="fillsg fd" x="540" y="86" width="200" height="7"/>
+            <text class="fd lbl-sg" x="540" y="76">COMPLETED PROGRAM · ALL COURSES + ALL HANDS-ON PASSED</text>
+            <text class="fd" x="750" y="94"><tspan class="lbl-ink">45</tspan> · 57.0%</text>
+
+            <rect class="fillin fd" style="--dl:180ms" x="540" y="170" width="40" height="7"/>
+            <text class="fd lbl-in" style="--dl:180ms" x="540" y="160">ALL COURSES · NO HANDS-ON SUBMITTED</text>
+            <text class="fd" style="--dl:180ms" x="590" y="178"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
+
+            <rect class="fillsl fd" style="--dl:360ms" x="540" y="254" width="40" height="7"/>
+            <text class="fd" style="--dl:360ms" x="540" y="244">DID NOT COMPLETE COURSES</text>
+            <text class="fd" style="--dl:360ms" x="590" y="262"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
+
+            <!-- 47 column glyph -->
+            <g id="colGlyph"></g>
+            <text class="fd" x="20" y="316">47 COLUMNS · APPS SCRIPT AUTOMATION · WEEKLY REPORT TRIGGER</text>
+
+            <!-- sparkline -->
+            <path class="ln thin dw" d="M540 384 H 900"/>
+            <polyline class="ln-in dw" id="sparkline" points=""/>
+            <g id="sparkDots"></g>
+            <text class="fd" x="540" y="316">WEEKLY HANDS-ON PASS RATE · ALL 45 FULL SUBMITTERS PASSED</text>
+            <text class="fd lbl-in" style="--dl:520ms" x="540" y="330">0 ON TIME · 45 LATE</text>
+
+            <!-- weekly risk triage -->
+            <text class="fd" x="20" y="336">WEEKLY RISK TRIAGE · ON TRACK / AT RISK / NOT ON TRACK</text>
+            <rect class="fillsl fd" style="--dl:640ms" x="20" y="346" width="221" height="7"/>
+            <rect class="fillin fd" style="--dl:760ms" x="241" y="346" width="159" height="7"/>
+            <path class="ln-in dw" style="--dl:880ms" d="M241 340 V 362"/>
+            <text class="fd" style="--dl:640ms" x="20" y="374"><tspan class="lbl-ink">46</tspan> ON TRACK</text>
+            <text class="fd lbl-in" style="--dl:760ms" x="241" y="374">33 FLAGGED · REVIEWED WEEKLY</text>
+
+            <!-- pulses -->
+            <path class="flow" style="--sp:4.4s" d="M170 170 H 250"/>
+            <path class="flow" style="--sp:5.6s;--dl:800ms" d="M420 170 C 470 170, 480 92, 540 92"/>
+            <path class="flow" style="--sp:5.6s;--dl:1500ms" d="M420 170 C 470 170, 480 176, 540 176"/>
+          </svg>
+        </div>
+      </div>
+
+      <dl class="results">
+        <div><dt class="mono">Tracker columns</dt><dd><span class="num" data-count="47">47</span></dd></div>
+        <div><dt class="mono">Candidates</dt><dd><span class="num" data-count="79">79</span></dd></div>
+        <div><dt class="mono">Flagged for review</dt><dd><span class="num" data-count="33">33</span><small>of 79</small></dd></div>
+        <div><dt class="mono">Completed all courses</dt><dd><span class="num" data-count="54">54</span></dd></div>
+        <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num" data-count="45">45</span><small>of 79</small></dd></div>
+      </dl>
+
+      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
+    </article>
+
+    <!-- ---- CASE 2 : FACTORY CELL ---- -->
     <article class="case" id="case-sim">
       <div class="case-top">
-        <div class="case-id mono"><b>Case 01</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
+        <div class="case-id mono"><b>Case 02</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
         <div>
           <h3>Factory cell production simulation</h3>
           <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
@@ -1146,91 +1231,6 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div><dt class="mono">Improvement</dt><dd><span class="num" data-count="136">136</span><small>%</small></dd></div>
         <div><dt class="mono">Documentation</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">35-page technical report, on request</dd></div>
       </dl>
-    </article>
-
-    <!-- ---- CASE 2 : SKILLMAP TRACKER ---- -->
-    <article class="case" id="case-cohort">
-      <div class="case-top">
-        <div class="case-id mono"><b>Case 02</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
-        <div>
-          <h3>SkillMap Cohort 1 Tracker</h3>
-          <div class="ctx mono">79 candidates · 10-week HVAC certification · weekly risk triage</div>
-          <p class="body">Weekly risk review on this cohort began as a manual pass across all 79 enrolled candidates. I replaced it with a 47-column tracker in Google Sheets, driven by Apps Script, that scores every candidate against rule-based criteria and classifies them On Track, At Risk, or Not On Track. The weekly pass now starts from a shortlist of 33 flagged cases rather than the full roster, and the same rules generate the end-of-week escalation report that goes to management.</p>
-          <p class="body">Flagging a case is one decision. Acting on the flag is a different one. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
-        </div>
-      </div>
-
-      <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
-        <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph, a weekly pass-rate sparkline, and a risk triage bar splitting the 79 candidates into 46 classified On Track and 33 flagged for weekly review.">
-            <!-- enrolled -->
-            <g class="hot"><rect class="st dw nd" x="20" y="140" width="150" height="60"/></g>
-            <text class="fd big" x="34" y="170">79</text>
-            <text class="fd" x="34" y="188">ENROLLED</text>
-
-            <path class="ln-ink dw" d="M170 170 H 250"/>
-            <text class="fd" x="182" y="160">−16</text>
-
-            <!-- active -->
-            <g class="hot"><rect class="st dw nd" x="250" y="140" width="170" height="60"/></g>
-            <text class="fd big" x="264" y="170">63</text>
-            <text class="fd" x="264" y="188">ACTIVE · WEEK 10/10</text>
-
-            <!-- fan out -->
-            <path class="ln-sg dw" d="M420 170 C 470 170, 480 92, 540 92"/>
-            <path class="ln-in dw" d="M420 170 C 470 170, 480 176, 540 176"/>
-            <path class="ln dw"    d="M420 170 C 470 170, 480 260, 540 260"/>
-
-            <!-- status bars -->
-            <rect class="fillsg fd" x="540" y="86" width="200" height="7"/>
-            <text class="fd lbl-sg" x="540" y="76">COMPLETED PROGRAM · ALL COURSES + ALL HANDS-ON PASSED</text>
-            <text class="fd" x="750" y="94"><tspan class="lbl-ink">45</tspan> · 57.0%</text>
-
-            <rect class="fillin fd" style="--dl:180ms" x="540" y="170" width="40" height="7"/>
-            <text class="fd lbl-in" style="--dl:180ms" x="540" y="160">ALL COURSES · NO HANDS-ON SUBMITTED</text>
-            <text class="fd" style="--dl:180ms" x="590" y="178"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
-
-            <rect class="fillsl fd" style="--dl:360ms" x="540" y="254" width="40" height="7"/>
-            <text class="fd" style="--dl:360ms" x="540" y="244">DID NOT COMPLETE COURSES</text>
-            <text class="fd" style="--dl:360ms" x="590" y="262"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
-
-            <!-- 47 column glyph -->
-            <g id="colGlyph"></g>
-            <text class="fd" x="20" y="316">47 COLUMNS · APPS SCRIPT AUTOMATION · WEEKLY REPORT TRIGGER</text>
-
-            <!-- sparkline -->
-            <path class="ln thin dw" d="M540 384 H 900"/>
-            <polyline class="ln-in dw" id="sparkline" points=""/>
-            <g id="sparkDots"></g>
-            <text class="fd" x="540" y="316">WEEKLY HANDS-ON PASS RATE · ALL 45 FULL SUBMITTERS PASSED</text>
-            <text class="fd lbl-in" style="--dl:520ms" x="540" y="330">0 ON TIME · 45 LATE</text>
-
-            <!-- weekly risk triage -->
-            <text class="fd" x="20" y="336">WEEKLY RISK TRIAGE · ON TRACK / AT RISK / NOT ON TRACK</text>
-            <rect class="fillsl fd" style="--dl:640ms" x="20" y="346" width="221" height="7"/>
-            <rect class="fillin fd" style="--dl:760ms" x="241" y="346" width="159" height="7"/>
-            <path class="ln-in dw" style="--dl:880ms" d="M241 340 V 362"/>
-            <text class="fd" style="--dl:640ms" x="20" y="374"><tspan class="lbl-ink">46</tspan> ON TRACK</text>
-            <text class="fd lbl-in" style="--dl:760ms" x="241" y="374">33 FLAGGED · REVIEWED WEEKLY</text>
-
-            <!-- pulses -->
-            <path class="flow" style="--sp:4.4s" d="M170 170 H 250"/>
-            <path class="flow" style="--sp:5.6s;--dl:800ms" d="M420 170 C 470 170, 480 92, 540 92"/>
-            <path class="flow" style="--sp:5.6s;--dl:1500ms" d="M420 170 C 470 170, 480 176, 540 176"/>
-          </svg>
-        </div>
-      </div>
-
-      <dl class="results">
-        <div><dt class="mono">Tracker columns</dt><dd><span class="num" data-count="47">47</span></dd></div>
-        <div><dt class="mono">Candidates</dt><dd><span class="num" data-count="79">79</span></dd></div>
-        <div><dt class="mono">Flagged for review</dt><dd><span class="num" data-count="33">33</span><small>of 79</small></dd></div>
-        <div><dt class="mono">Completed all courses</dt><dd><span class="num" data-count="54">54</span></dd></div>
-        <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num" data-count="45">45</span><small>of 79</small></dd></div>
-      </dl>
-
-      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
     </article>
 
     <!-- ---- CASE 3 : ABB PACKAGING ---- -->
@@ -1551,24 +1551,24 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <ul><li>Risk identification and assessment</li><li>Rule-based risk classification</li><li>Escalation tracking and closure</li><li>Root cause analysis</li><li>Scenario planning</li><li>Sensitivity analysis</li><li>Process documentation and governance</li><li>Stakeholder and supplier coordination</li></ul>
       </div>
       <div class="cap">
-        <h4>Simulation &amp; manufacturing</h4><div class="u" style="--dl:90ms"></div>
-        <ul><li>VisualComponents</li><li>3D production simulation</li><li>Digital twin modelling</li><li>Internal logistics simulation</li><li>Material flow analysis</li><li>Bottleneck identification</li><li>Layout optimisation</li><li>Human-robot collaboration</li><li>openLCA (life-cycle assessment)</li></ul>
-      </div>
-      <div class="cap">
-        <h4>Lean &amp; operations</h4><div class="u" style="--dl:180ms"></div>
-        <ul><li>Lean manufacturing principles</li><li>Process analysis</li><li>Time study concepts</li><li>Line balancing</li><li>Quality &amp; reliability management</li><li>KPI development</li><li>Operations research</li></ul>
-      </div>
-      <div class="cap">
-        <h4>Project &amp; agile</h4><div class="u" style="--dl:270ms"></div>
-        <ul><li>Microsoft 365 (Word, Excel, PowerPoint, Teams, Copilot)</li><li>JIRA</li><li>Confluence</li><li>Asana</li><li>Notion</li><li>Google Workspace</li><li>Slack</li><li>Scrum</li><li>Kanban</li><li>Sprint planning</li><li>Backlog refinement</li><li>Retrospectives</li><li>Stand-ups</li></ul>
-      </div>
-      <div class="cap">
-        <h4>Data &amp; analytics</h4><div class="u" style="--dl:360ms"></div>
+        <h4>Data &amp; analytics</h4><div class="u" style="--dl:90ms"></div>
         <ul><li>Excel (pivot tables, dashboards, advanced formulas)</li><li>Power BI (basic)</li><li>Looker Studio</li><li>Google Sheets + Apps Script</li><li>SAS (logistic regression, non-parametric testing)</li><li>GNU Octave</li><li>Data quality management</li><li>Trend identification</li></ul>
       </div>
       <div class="cap">
-        <h4>AI tools</h4><div class="u" style="--dl:450ms"></div>
+        <h4>Project &amp; agile</h4><div class="u" style="--dl:180ms"></div>
+        <ul><li>Microsoft 365 (Word, Excel, PowerPoint, Teams, Copilot)</li><li>JIRA</li><li>Confluence</li><li>Asana</li><li>Notion</li><li>Google Workspace</li><li>Slack</li><li>Scrum</li><li>Kanban</li><li>Sprint planning</li><li>Backlog refinement</li><li>Retrospectives</li><li>Stand-ups</li></ul>
+      </div>
+      <div class="cap">
+        <h4>Lean &amp; operations</h4><div class="u" style="--dl:270ms"></div>
+        <ul><li>Lean manufacturing principles</li><li>Process analysis</li><li>Time study concepts</li><li>Line balancing</li><li>Quality &amp; reliability management</li><li>KPI development</li><li>Operations research</li></ul>
+      </div>
+      <div class="cap">
+        <h4>AI tools</h4><div class="u" style="--dl:360ms"></div>
         <ul><li>Copilot</li><li>Claude</li><li>ChatGPT</li><li>Perplexity</li><li>Daily applied use</li><li>Evaluating in-house AI agents</li><li>IBM AI/Cloud (in progress)</li></ul>
+      </div>
+      <div class="cap">
+        <h4>Simulation &amp; manufacturing</h4><div class="u" style="--dl:450ms"></div>
+        <ul><li>VisualComponents</li><li>3D production simulation</li><li>Digital twin modelling</li><li>Internal logistics simulation</li><li>Material flow analysis</li><li>Bottleneck identification</li><li>Layout optimisation</li><li>Human-robot collaboration</li><li>openLCA (life-cycle assessment)</li></ul>
       </div>
       <div class="cap">
         <h4>Working style</h4><div class="u" style="--dl:540ms"></div>
@@ -1639,7 +1639,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.09 / Contact</div>
       <div>
-        <h2>Open to risk, project, program, and operations roles in Finland and Europe.</h2>
+        <h2>Open to business operations, risk, project, and program roles in Finland and Europe.</h2>
       </div>
     </div>
 
