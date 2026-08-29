@@ -579,6 +579,27 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
 .spec .flag{ color: var(--slate); white-space:nowrap; }
 .spec .flag.hold{ color: var(--indigo); }
 
+/* One spec carries a live link rather than a static flag. Persistent hairline
+   so it reads as clickable at rest; opacity and the arrow carry the hover. */
+.spec a.flag{
+  color: var(--indigo); text-decoration:none;
+  display:inline-flex; align-items:baseline; gap:.42em;
+  position:relative;
+}
+.spec a.flag::after{
+  content:""; position:absolute; left:0; right:0; bottom:-.3em; height:1px;
+  background: currentColor; opacity:.3;
+  transition: opacity var(--d-1) var(--e-out);
+}
+.spec a.flag:hover, .spec a.flag:focus-visible{ color: var(--indigo-2); }
+.spec a.flag:hover::after, .spec a.flag:focus-visible::after{ opacity:.75; }
+.spec a.flag .ext{
+  display:inline-block;
+  transition: transform var(--d-1) var(--e-out);
+}
+.spec a.flag:hover .ext,
+.spec a.flag:focus-visible .ext{ transform: translate(2px,-2px); }
+
 /* ============================================================
    CAPABILITY MATRIX
    ============================================================ */
@@ -1455,7 +1476,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
       <div class="sec-tag mono"><i></i>ST.06 / Systems</div>
       <div>
         <h2>What the team actually runs on.</h2>
-        <p class="sub">Onboarding, QA, and reporting are three views of the same network. Every hire, every course, and every ticket moves through the same set of nodes.</p>
+        <p class="sub">Onboarding, course production, QA, and reporting are four views of the same network. Every hire, every course, and every ticket moves through the same set of nodes.</p>
       </div>
     </div>
 
@@ -1495,6 +1516,13 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
               <p>A live Looker Studio dashboard tracking quality feedback ticket trends. Shared as a live link rather than static figures.</p>
             </div>
             <div class="flag mono hold">Link on request</div>
+          </div>
+          <div class="spec">
+            <div>
+              <h4>CDLC workflow record</h4>
+              <p>The course development lifecycle as it is actually configured, not as it is described in a deck: one Epic per course, the Course Type field that forks every work type created beneath it, and SOP v1.0 across seven stages and five roles. Traced to the bottom of the tree against 418 epics and published as a record you can browse.</p>
+            </div>
+            <a class="flag mono live" href="https://palsampurna16-prog.github.io/cdlc-workflow-record/" target="_blank" rel="noopener noreferrer" aria-label="Browse the CDLC workflow record, opens in a new tab">Browse it<span class="ext" aria-hidden="true">&#8599;</span></a>
           </div>
         </div>
       </div>
