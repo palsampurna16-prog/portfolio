@@ -64,6 +64,7 @@
   --gut: clamp(1.15rem, 0.6rem + 2.6vw, 3.6rem);
   --sec: clamp(5.5rem, 3.5rem + 8vw, 11rem);
   --rail: 210px;
+  --bar-h: 54px;
 
   /* motion */
   --e-out:  cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -261,8 +262,16 @@ a{ color: inherit; }
   transform: scaleX(0); transform-origin: left center;
   transition: transform 120ms linear;
 }
+/* Below 720px the section links drop to a second row rather than disappearing,
+   so phone visitors can still jump to the cases and contact details. */
 @media (max-width: 720px){
-  .bar-read, .bar-links{ display:none; }
+  .bar-read{ display:none; }
+  .bar{ height:auto; flex-wrap:wrap; row-gap:0; padding-top:.7rem; }
+  .bar-links{
+    order:1; flex-basis:100%; justify-content:space-between;
+    margin-top:.6rem; padding:.55rem 0 .6rem; border-top:1px solid var(--rule);
+  }
+  :root{ --bar-h: 92px; }
 }
 
 /* left measurement rail */
@@ -300,7 +309,7 @@ main{ position:relative; z-index:2; }
   padding: 0 var(--gut);
 }
 
-.sec{ padding: var(--sec) 0; position:relative; scroll-margin-top:54px; }
+.sec{ padding: var(--sec) 0; position:relative; scroll-margin-top: var(--bar-h); }
 .sec + .sec{ border-top: 1px solid var(--rule); }
 
 .sec-head{
@@ -329,11 +338,7 @@ main{ position:relative; z-index:2; }
 .grid2 > *, .sec-head > *, .case-top > *{ min-width: 0; }
 .figure, .figure-body{ min-width: 0; }
 @media (max-width: 860px){
-  /* .case-top has to collapse here too. It is built on the same
-     `var(--rail) 1fr` track pair, so with --rail at 0 its first column became
-     0px wide while the case ID text kept its own width and painted straight
-     over the case title and body copy. */
-  .sec-head, .grid2, .case-top{ grid-template-columns: 1fr; gap: 1.1rem; }
+  .sec-head, .grid2{ grid-template-columns: 1fr; gap: 1.1rem; }
   :root{ --rail: 0px; }
 }
 
@@ -465,6 +470,13 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 .case h3{ font-size: clamp(1.35rem,1.05rem+1.1vw,1.95rem); max-width:22ch; letter-spacing:-0.026em; }
 .case .ctx{ margin-top:.65rem; color: var(--slate); }
 .case .body{ margin-top:1.15rem; color: var(--ink-2); max-width:62ch; line-height:1.6; }
+/* .case-top is built on the same `var(--rail) 1fr` track pair as .sec-head, so
+   with --rail at 0 its first column is 0px wide and the case ID paints straight
+   over the title and body copy. The collapse has to sit after the base rule
+   above, or source order cancels it. */
+@media (max-width: 860px){
+  .case-top{ grid-template-columns: 1fr; gap: .9rem; }
+}
 
 .figure{
   margin-top: clamp(1.8rem, 3.5vw, 3rem);
@@ -848,7 +860,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <dl class="hero-meta rv">
       <div><dt class="mono">Current</dt><dd>Quality Team Lead, SkillCat</dd></div>
       <div><dt class="mono">Certification</dt><dd>IPMA Foundation, May 2026</dd></div>
-      <div><dt class="mono">Academic</dt><dd>M.Sc. IEM, GPA 4.09 / 5 · 75 ECTS</dd></div>
+      <div><dt class="mono">Academic</dt><dd>M.Sc. IEM, GPA 4.09 / 5 · 86 ECTS</dd></div>
       <div><dt class="mono">Open to</dt><dd>Business Operations, Risk, Project, Program</dd></div>
     </dl>
   </div>
@@ -949,10 +961,10 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
           <div class="org">SkillCat, remote. Skilled-trades e-learning, 400,000+ tradespeople trained. Promoted from Content Quality Analyst (Jan 2026).</div>
           <ul>
             <li>Lead a team of 5 across quality assurance, content operations, and digitization.</li>
-            <li>Designed and own the SkillMap Cohort 1 Tracker.</li>
+            <li>Designed and own the SkillMap Cohort 1 Tracker (79 candidates, closed August 2026). Cohort 2 starts mid-November 2026.</li>
             <li>Built a 30-day, 5-department onboarding framework from scratch.</li>
             <li>Developed a 15-stage course production QA pipeline, Master Checklist v1.05, through 5+ revisions.</li>
-            <li>Report to leadership weekly through a live Looker Studio dashboard consolidating 7 months of quality-ticket data.</li>
+            <li>Report to leadership weekly through a live Looker Studio dashboard that consolidates the team's quality-ticket data.</li>
             <li>Ran ad-hoc audits across 2,000+ questions in 8 flagship courses, correcting faulty items, closing a PPE-labeling gap with a hazard-symbol fix, and rewriting duplicate BSP questions into situational formats.</li>
             <li>Facilitate daily team check-ins and end-of-day reviews, 3 to 4 weekly working sessions on active initiatives, and two weeks of daily onboarding sessions for every new hire.</li>
             <li>Pushed back on a proposal for full deadline automation from the Chief of Staff and recommended a manual-review dashboard with a bulk-fail action instead.</li>
@@ -968,10 +980,10 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
           <h3>Founder in Residence</h3>
           <div class="org">Vaasa Startup Factory</div>
           <ul>
-            <li>Co-founded BestB4, a real-time discount platform connecting Finnish grocery retailers with price-sensitive, sustainability-minded shoppers to cut food waste. Built over two months in Summer Bloom 2026, the Vaasa Startup Factory student incubator run with the six universities of Vaasa. Now raising pre-seed funding for a Vaasa pilot.</li>
+            <li>Co-founded BestB4, a real-time discount platform connecting Finnish grocery retailers with price-sensitive, sustainability-minded shoppers to cut food waste. Built as a two-month project in Summer Bloom 2026, the Vaasa Startup Factory student incubator run with the six universities of Vaasa. The project closed when the programme ended.</li>
           </ul>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34;--dl:160ms"></div></div><small>Co-founder</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34;--dl:160ms"></div></div><small>Incubator project</small></div>
       </article>
 
       <article class="tl-row">
@@ -1097,7 +1109,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
         <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num" data-count="45">45</span><small>of 79</small></dd></div>
       </dl>
 
-      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10. Candidate count excludes test accounts present in week 1. Two submissions, from weeks 2 and 7, were still ungraded at the last sync on 9 August 2026.</p>
+      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10, from the last sync on 9 August 2026. Candidate count excludes test accounts present in week 1.</p>
     </article>
 
     <!-- ---- CASE 2 : FACTORY CELL ---- -->
@@ -1515,7 +1527,7 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
           <div class="spec">
             <div>
               <h4>QFT Trends dashboard</h4>
-              <p>A live Looker Studio dashboard consolidating 7 months of quality-ticket data, reviewed with leadership weekly. Shared as a live link rather than static figures.</p>
+              <p>A live Looker Studio dashboard consolidating the team's quality-ticket data, reviewed with leadership weekly. Shared as a live link rather than static figures.</p>
             </div>
             <div class="flag mono hold">Link on request</div>
           </div>
@@ -1597,11 +1609,11 @@ svg.dg .lat{ fill:none; stroke: var(--indigo); stroke-width:.8; opacity:0; }
     <div class="creds">
       <div class="cred-block">
         <h4>Education</h4>
-        <div class="cred"><div><strong>M.Sc. Economics and Business Administration, Industrial Engineering &amp; Management</strong><span>University of Vaasa, Finland. In progress, expected August 2027. Active student status. 75 ECTS completed, 11 in progress.</span></div><div class="g mono">GPA 4.09</div></div>
+        <div class="cred"><div><strong>M.Sc. Economics and Business Administration, Industrial Engineering &amp; Management</strong><span>University of Vaasa, Finland. In progress, expected August 2027. Active student status. 86 ECTS completed.</span></div><div class="g mono">GPA 4.09</div></div>
         <div class="cred"><div><strong>Key courses, grade 5 / 5</strong><span>Decision Analysis, Operations Management Methods, Supply Chain Design, Modelling &amp; Simulation, Introduction to Operations Management. Operations Research 4/5, Quality &amp; Reliability Management 3/5.</span></div><div class="g mono">5 / 5</div></div>
         <div class="cred"><div><strong>Student exchange, Micro-Nano Technologies &amp; Sensors for Global Challenges</strong><span>Universidad de Cantabria, Santander, Spain. Erasmus+, Jun to Jul 2026.</span></div><div class="g mono">Erasmus+</div></div>
-        <div class="cred"><div><strong>International Summer School on Entrepreneurship and Venturing</strong><span>University of Vaasa, Finland. International Entrepreneurship, Ideation and Venture Creation, Start-up Scouting and Valuation. 10 to 28 August 2026. In progress.</span></div><div class="g mono">11 ECTS</div></div>
-        <div class="cred"><div><strong>Finnish language studies, Finnish 3 &amp; 4</strong><span>Metropolia University of Applied Sciences, Helsinki. In progress.</span></div><div class="g mono">B1</div></div>
+        <div class="cred"><div><strong>International Summer School on Entrepreneurship and Venturing</strong><span>University of Vaasa, Finland. International Entrepreneurship, Ideation and Venture Creation, Start-up Scouting and Valuation. 10 to 28 August 2026.</span></div><div class="g mono">11 ECTS</div></div>
+        <div class="cred"><div><strong>Finnish language studies, Finnish 3 &amp; 4</strong><span>Metropolia University of Applied Sciences, Helsinki. Completed.</span></div><div class="g mono">B1</div></div>
         <div class="cred"><div><strong>M.Sc. Economics</strong><span>Vidyasagar University, India, 2021.</span></div><div class="g mono">2021</div></div>
         <div class="cred"><div><strong>B.Sc. Economics</strong><span>Midnapore College Autonomous, India, 2019.</span></div><div class="g mono">2019</div></div>
       </div>

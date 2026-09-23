@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
   <title id="title">Sampurna Pal — Systems and Operations</title>
-  <desc id="desc">Portfolio preview for Sampurna Pal, an IPMA-certified project manager focused on operations, quality systems, and data-driven decisions.</desc>
+  <desc id="desc">Portfolio preview for Sampurna Pal, an IPMA-certified project manager focused on business operations, risk, quality systems, and data-driven decisions.</desc>
   <defs>
     <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
       <path d="M16 0H0V16" fill="none" stroke="#EDEAE3" stroke-opacity=".045" stroke-width="1"/>
@@ -44,7 +44,7 @@
   </g>
 
   <!-- Hero -->
-  <text x="66" y="122" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.35">VAASA, FINLAND · RIGHT TO WORK IN FINLAND</text>
+  <text x="66" y="122" fill="#878D95" font-family="Menlo, Consolas, monospace" font-size="9" letter-spacing="1.35">VAASA, FINLAND · ACTIVE STUDENT STATUS · RIGHT TO WORK IN FINLAND</text>
   <line x1="66" y1="135" x2="98" y2="135" stroke="#343A40"/>
 
   <g font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="400" letter-spacing="-2.8">
@@ -56,7 +56,7 @@
   <g fill="#C7C3BB" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="-.15">
     <text x="66" y="382">IPMA-certified project manager finishing an M.Sc. in Industrial Engineering</text>
     <text x="66" y="405">and Management at the University of Vaasa. I lead quality systems and</text>
-    <text x="66" y="428">cross-functional teams, and build the analytical tools those teams run on.</text>
+    <text x="66" y="428">cross-functional teams, and I build the analytical tools those teams run on.</text>
   </g>
 
   <!-- Portfolio metadata strip -->
@@ -66,10 +66,10 @@
     <text x="305" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">CERTIFICATION</text>
     <text x="580" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">ACADEMIC</text>
     <text x="835" y="505" fill="#878D95" font-size="8" letter-spacing="1.25">OPEN TO</text>
-    <text x="66" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Content Quality Team Lead</text>
+    <text x="66" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Quality Team Lead, SkillCat</text>
     <text x="305" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">IPMA Foundation · May 2026</text>
     <text x="580" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">M.Sc. IEM · GPA 4.09 / 5</text>
-    <text x="835" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Project · Operations</text>
+    <text x="835" y="532" fill="#EDEAE3" font-family="Arial, Helvetica, sans-serif" font-size="12">Business Operations · Risk · Project · Program</text>
   </g>
   <line x1="66" y1="566" x2="1136" y2="566" stroke="#343A40"/>
   <circle cx="66" cy="566" r="3" fill="#9AB3A1"/>
