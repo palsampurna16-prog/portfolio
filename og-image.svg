@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
   <title id="title">Sampurna Pal — Systems and Operations</title>
-  <desc id="desc">Portfolio preview for Sampurna Pal, an IPMA-certified project manager focused on business operations, risk, quality systems, and data-driven decisions.</desc>
+  <desc id="desc">Portfolio preview for Sampurna Pal, Quality Team Lead at SkillCat and M.Sc. student in Industrial Engineering and Management, building operations and quality systems.</desc>
   <defs>
     <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
       <path d="M16 0H0V16" fill="none" stroke="#EDEAE3" stroke-opacity=".045" stroke-width="1"/>
@@ -54,9 +54,9 @@
   </g>
 
   <g fill="#C7C3BB" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="-.15">
-    <text x="66" y="382">IPMA-certified project manager finishing an M.Sc. in Industrial Engineering</text>
-    <text x="66" y="405">and Management at the University of Vaasa. I lead quality systems and</text>
-    <text x="66" y="428">cross-functional teams, and I build the analytical tools those teams run on.</text>
+    <text x="66" y="382">Quality Team Lead at SkillCat and M.Sc. student in Industrial Engineering</text>
+    <text x="66" y="405">and Management at the University of Vaasa. I lead a five-person quality</text>
+    <text x="66" y="428">team, and I build the analytical tools that team runs on.</text>
   </g>
 
   <!-- Portfolio metadata strip -->
