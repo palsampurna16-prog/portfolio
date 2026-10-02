@@ -33,7 +33,7 @@
   --ink:          #EDEAE3;
   --ink-2:        #C7C3BB;
   --slate:        #878D95;
-  --slate-2:      #666C74;
+  --slate-2:      #7E848C;
 
   --rule:         #262A2E;
   --rule-2:       #343A40;
@@ -58,7 +58,7 @@
   --t-h3:    clamp(1.12rem, 0.98rem + 0.6vw, 1.42rem);
   --t-body:  clamp(0.98rem, 0.94rem + 0.2vw, 1.09rem);
   --t-lead:  clamp(1.06rem, 0.96rem + 0.5vw, 1.32rem);
-  --t-mono:  clamp(0.66rem, 0.63rem + 0.14vw, 0.75rem);
+  --t-mono:  clamp(0.75rem, 0.72rem + 0.12vw, 0.8rem);
 
   /* space */
   --gut: clamp(1.15rem, 0.6rem + 2.6vw, 3.6rem);
@@ -78,7 +78,7 @@
 :root[data-theme="dark"]{
   color-scheme: dark;
   --paper:#121416; --paper-raised:#181B1E; --paper-sunk:#0E1012;
-  --ink:#EDEAE3; --ink-2:#C7C3BB; --slate:#878D95; --slate-2:#666C74;
+  --ink:#EDEAE3; --ink-2:#C7C3BB; --slate:#878D95; --slate-2:#7E848C;
   --rule:#262A2E; --rule-2:#343A40;
   --indigo:#8E9AC6; --indigo-2:#5C678F; --sage:#9AB3A1; --sage-2:#66806D;
   --grid-ink:237, 234, 227;
@@ -222,7 +222,7 @@ a{ color: inherit; }
 #thread .t-cap{ fill:none; stroke: var(--ink); stroke-width:1.2; opacity:.5; }
 
 /* ============================================================
-   CHROME — instrument bar + station rail
+   CHROME — instrument bar
    ============================================================ */
 .bar{
   position: fixed; top:0; left:0; right:0; z-index:40;
@@ -246,8 +246,6 @@ a{ color: inherit; }
 .bar-name{ font-size:.92rem; letter-spacing:-0.015em; white-space:nowrap; }
 .bar-name b{ font-weight:500; }
 .bar-sep{ flex:1; height:1px; background: var(--rule); }
-.bar-read{ color: var(--slate); white-space:nowrap; }
-.bar-read .live{ color: var(--indigo); }
 .bar-links{ display:flex; gap:1.1rem; }
 .bar-links a{
   color: var(--slate); text-decoration:none; white-space:nowrap;
@@ -265,7 +263,6 @@ a{ color: inherit; }
 /* Below 720px the section links drop to a second row rather than disappearing,
    so phone visitors can still jump to the cases and contact details. */
 @media (max-width: 720px){
-  .bar-read{ display:none; }
   .bar{ height:auto; flex-wrap:wrap; row-gap:0; padding-top:.7rem; }
   .bar-links{
     order:1; flex-basis:100%; justify-content:space-between;
@@ -274,29 +271,8 @@ a{ color: inherit; }
   :root{ --bar-h: 92px; }
 }
 
-/* left measurement rail */
-.rail{
-  position: fixed; left: 14px; top:0; bottom:0; width: 34px; z-index:5;
-  pointer-events:auto;
-  display:flex; flex-direction:column; justify-content:center;
-  gap: 10px;
-}
-.rail-item{
-  display:flex; align-items:center; gap:7px;
-  color: var(--slate-2); text-decoration:none; cursor:pointer;
-  font-family: var(--mono); font-size:8.5px; letter-spacing:.1em;
-  opacity:.55;
-  transition: opacity var(--d-2) var(--e-out), color var(--d-2) var(--e-out);
-}
-.rail-item:hover{ opacity:1; color:var(--ink); }
-.rail-item i{
-  display:block; width:18px; height:1px; background: currentColor;
-  transform: scaleX(.44); transform-origin: left center;
-  transition: transform var(--d-2) var(--e-mech);
-}
-.rail-item.on{ opacity:1; color: var(--indigo); }
-.rail-item.on i{ transform: scaleX(1); }
-@media (max-width: 1180px){ .rail{ display:none; } }
+/* The drafting thread runs through the text column on narrow screens. */
+@media (max-width: 720px){ #thread{ display:none; } }
 
 /* ============================================================
    LAYOUT
@@ -377,7 +353,7 @@ a:focus-visible > .lr > span{ transform: translateY(-3px); }
 /* ============================================================
    HERO
    ============================================================ */
-#hero{ padding-top: clamp(7rem, 6rem + 6vw, 11rem); padding-bottom: clamp(4rem,3rem+5vw,7rem); border-top:0; }
+#hero{ padding-top: clamp(7rem, 6rem + 6vw, 11rem); padding-bottom: clamp(4rem,3rem + 5vw,7rem); border-top:0; }
 
 .hero-eyebrow{ color: var(--slate); display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; }
 .hero-eyebrow s{ display:block; width:34px; height:1px; background: var(--rule-2); text-decoration:none; }
@@ -417,7 +393,7 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 
 /* word-by-word hero set */
 .w{ display:inline-block; opacity:0; transform: translateY(0.32em); }
-.lit-in .w{ opacity:1; transform:none; transition: opacity 760ms var(--e-out), transform 760ms var(--e-out); }
+.lit-in .w{ opacity:1; transform:none; transition: opacity 420ms var(--e-out), transform 420ms var(--e-out); }
 
 /* ============================================================
    TIMELINE (experience) — process rail with duration bars
@@ -467,9 +443,10 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 }
 .case-id{ color: var(--slate); padding-top:.4rem; }
 .case-id b{ display:block; color: var(--indigo); font-weight:400; margin-bottom:.4rem; }
-.case h3{ font-size: clamp(1.35rem,1.05rem+1.1vw,1.95rem); max-width:22ch; letter-spacing:-0.026em; }
+.case h3{ font-size: clamp(1.35rem,1.05rem + 1.1vw,1.95rem); max-width:22ch; letter-spacing:-0.026em; }
 .case .ctx{ margin-top:.65rem; color: var(--slate); }
 .case .body{ margin-top:1.15rem; color: var(--ink-2); max-width:62ch; line-height:1.6; }
+.case-systems .specs{ margin-top:1.6rem; }
 /* .case-top is built on the same `var(--rail) 1fr` track pair as .sec-head, so
    with --rail at 0 its first column is 0px wide and the case ID paints straight
    over the title and body copy. The collapse has to sit after the base rule
@@ -513,7 +490,7 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 .results div{ padding: 1.1rem 1.2rem 1.1rem 0; border-right:1px solid var(--rule); }
 .results div:last-child{ border-right:0; }
 .results dt{ color: var(--slate); margin-bottom:.5rem; }
-.results dd{ margin:0; font-size: clamp(1.5rem,1.15rem+1.3vw,2.15rem); letter-spacing:-0.035em; line-height:1; font-family:var(--mono); font-variant-numeric: tabular-nums; }
+.results dd{ margin:0; font-size: clamp(1.5rem,1.15rem + 1.3vw,2.15rem); letter-spacing:-0.035em; line-height:1; font-family:var(--mono); font-variant-numeric: tabular-nums; }
 .results dd small{ font-size:.44em; letter-spacing:.06em; color: var(--slate); margin-left:.35em; }
 .results .accent dd{ color: var(--sage); }
 
@@ -662,7 +639,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 .tb-cell.wide{ grid-column: 1 / -1; border-right:0; border-bottom:0; }
 .tb-cell dt{ color: var(--slate); margin-bottom:.5rem; font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em; text-transform:uppercase; }
 .tb-cell dd{ margin:0; font-size:.98rem; letter-spacing:-0.012em; }
-.tb-cell dd.lg{ font-size: clamp(1.3rem,1rem+1.2vw,1.85rem); letter-spacing:-0.03em; line-height:1.1; }
+.tb-cell dd.lg{ font-size: clamp(1.3rem,1rem + 1.2vw,1.85rem); letter-spacing:-0.03em; line-height:1.1; }
 .tb-cell a{ text-decoration:none; border-bottom:1px solid var(--rule-2); padding-bottom:1px; transition: border-color var(--d-1) var(--e-out), color var(--d-1) var(--e-out); }
 .tb-cell a:hover{ color: var(--indigo); border-bottom-color: var(--indigo); }
 @media (max-width:720px){
@@ -744,7 +721,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 .cell-readout{ position:absolute; right:.2rem; top:.2rem; text-align:right; pointer-events:none;
   display:flex; flex-direction:column; gap:.3rem; }
 .cell-readout .val{ font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:clamp(1.6rem,1rem+2.2vw,2.7rem); line-height:1; letter-spacing:-0.04em;
+  font-size:clamp(1.6rem,1rem + 2.2vw,2.7rem); line-height:1; letter-spacing:-0.04em;
   color:var(--ink); transition:color 600ms var(--e-out); }
 .cell-readout.opt .val{ color:var(--sage); }
 .cell-readout .unit{ color:var(--slate); }
@@ -825,18 +802,15 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <header class="bar">
   <div class="bar-name"><b>Sampurna Pal</b></div>
   <div class="bar-sep"></div>
-  <div class="bar-read mono">ST.<span id="stnum">01</span> <span id="stname">Origin</span> <span class="live">·</span> <span id="pct">000</span>%</div>
   <nav class="bar-links mono" aria-label="Sections">
-    <a href="#work">Case studies</a>
-    <a href="#systems">Systems</a>
+    <a href="#work">Work</a>
+    <a href="#history">Experience</a>
     <a href="#contact">Contact</a>
   </nav>
   <button class="tgl" id="tgl" type="button" aria-label="Switch colour theme">Theme</button>
   <div class="bar-prog" id="prog"></div>
 </header>
 
-<!-- station rail -->
-<nav class="rail" id="rail" aria-label="Page sections"></nav>
 
 <main>
 
@@ -863,172 +837,15 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 </section>
 
 <!-- ============================================================
-     02 · SIGNAL PATH
-     ============================================================ -->
-<section class="sec" id="about" data-station="Signal path" data-thread="0.30">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.02 / Approach</div>
-      <div>
-        <h2 data-ml>Raw operational data goes in. A decision comes out.</h2>
-        <p class="sub" data-ml>Most reporting stops at the chart. The useful part is the layer after it: the flag that fires, the review that gets triggered, the call someone can actually defend in a meeting.</p>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="mono sec-tag" style="padding-top:.1rem">Fig. 2.1 / Signal chain</div>
-      <div>
-        <div class="figure">
-          <div class="figure-head mono"><span class="dot"></span> Signal chain <span class="grow"></span> <span>Raw · Structured · Flagged · Decided</span></div>
-          <div class="figure-body">
-            <svg class="dg" viewBox="0 0 900 210" role="img" aria-label="Diagram: four dotted raw data feeds converge into a structuring node, then a flagging node, then a single decision output.">
-              <!-- raw feeds -->
-              <path class="ln dashed dw" d="M20 30 C 120 30, 150 95, 250 100"/>
-              <path class="ln dashed dw" d="M20 72 C 120 72, 160 96, 250 100"/>
-              <path class="ln dashed dw" d="M20 128 C 120 128, 160 104, 250 100"/>
-              <path class="ln dashed dw" d="M20 170 C 120 170, 150 105, 250 100"/>
-              <text class="fd" x="20" y="22">TICKETS</text>
-              <text class="fd" x="20" y="64">COHORT ACTIVITY</text>
-              <text class="fd" x="20" y="150">QA STAGE OUTPUT</text>
-              <text class="fd" x="20" y="192">CYCLE TIMES</text>
-
-              <!-- structure node -->
-              <rect class="st dw" x="250" y="76" width="120" height="48"/>
-              <text class="fd lbl-ink" x="264" y="98">STRUCTURE</text>
-              <text class="fd" x="264" y="112">47 COLUMNS</text>
-
-              <path class="ln-ink dw" d="M370 100 H 470"/>
-
-              <!-- rule node -->
-              <rect class="st dw" x="470" y="76" width="120" height="48"/>
-              <text class="fd lbl-ink" x="484" y="98">RULES</text>
-              <text class="fd" x="484" y="112">RISK FLAGGING</text>
-
-              <path class="ln-ink dw" d="M590 100 H 690"/>
-
-              <!-- human review -->
-              <path class="ln-sg dw" d="M690 100 L 730 78 L 862 78"/>
-              <path class="ln dashed dw" d="M690 100 L 730 124 L 862 124"/>
-              <circle class="dot fd" cx="690" cy="100" r="4"/>
-              <text class="fd lbl-sg" x="738" y="70">HUMAN REVIEW · BULK ACTION</text>
-              <text class="fd" x="738" y="142">FULL AUTOMATION (REJECTED)</text>
-
-              <!-- decision terminal -->
-              <path class="ln-sg dw" d="M862 78 h 20"/>
-              <circle class="fillsg fd" cx="886" cy="78" r="3.4"/>
-
-              <!-- measurement guides -->
-              <path class="ln thin dw" d="M250 150 V 162 M370 150 V 162 M250 156 H 370"/>
-              <text class="fd" x="286" y="176">STAGE 1</text>
-              <path class="ln thin dw" d="M470 150 V 162 M590 150 V 162 M470 156 H 590"/>
-              <text class="fd" x="506" y="176">STAGE 2</text>
-
-              <!-- flowing pulses -->
-              <path class="flow" style="--sp:5.4s" d="M20 30 C 120 30, 150 95, 250 100"/>
-              <path class="flow" style="--sp:6.2s;--dl:900ms" d="M20 128 C 120 128, 160 104, 250 100"/>
-              <path class="flow" style="--sp:3.4s;--dl:1600ms" d="M370 100 H 470"/>
-              <path class="flow" style="--sp:3.4s;--dl:2400ms" d="M590 100 H 690"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     03 · OPERATING HISTORY
-     ============================================================ -->
-<section class="sec" id="history" data-station="Operating history" data-thread="0.20">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.03 / Experience</div>
-      <div>
-        <h2>Now in EHS at Danfoss, after two years in quality at SkillCat.</h2>
-        <p class="sub">Cross-functional, and usually starting from a blank sheet.</p>
-      </div>
-    </div>
-
-    <div class="tl">
-      <article class="tl-row">
-        <div class="tl-when mono">Oct 2026 –<br>Present</div>
-        <div class="tl-what">
-          <h3>EHS Trainee</h3>
-          <div class="org">Danfoss. Environment, health and safety. Started October 2026.</div>
-        </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.06;--dl:0ms"></div></div><small>Current</small></div>
-      </article>
-
-      <article class="tl-row">
-        <div class="tl-when mono">Nov 2024 –<br>Sep 2026</div>
-        <div class="tl-what">
-          <h3>Quality Team Lead</h3>
-          <div class="org">SkillCat, remote. Skilled-trades e-learning, 400,000+ tradespeople trained. Promoted from Content Quality Analyst (Jan 2026).</div>
-          <ul>
-            <li>Led a team of 5 across quality assurance, content operations, and digitization.</li>
-            <li>Designed and owned the SkillMap Cohort 1 Tracker (79 candidates, closed August 2026).</li>
-            <li>Built a 30-day, 5-department onboarding framework from scratch.</li>
-            <li>Developed a 15-stage course production QA pipeline, Master Checklist v1.05, through 5+ revisions.</li>
-            <li>Reported to leadership weekly through a live Looker Studio dashboard that consolidated the team's quality-ticket data.</li>
-            <li>Ran ad-hoc audits across 2,000+ questions in 8 flagship courses, correcting faulty items, closing a PPE-labeling gap with a hazard-symbol fix, and rewriting duplicate BSP questions into situational formats.</li>
-            <li>Facilitated daily team check-ins and end-of-day reviews, 3 to 4 weekly working sessions on active initiatives, and two weeks of daily onboarding sessions for every new hire.</li>
-            <li>Pushed back on a proposal for full deadline automation from the Chief of Staff and recommended a manual-review dashboard with a bulk-fail action instead.</li>
-            <li>Tested and evaluated AI agent performance for slide digitization and SME tracking workflows.</li>
-          </ul>
-        </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:1;--dl:160ms"></div></div><small>Team of 5</small></div>
-      </article>
-
-      <article class="tl-row">
-        <div class="tl-when mono">Jun 2026 –<br>Aug 2026</div>
-        <div class="tl-what">
-          <h3>Founder in Residence</h3>
-          <div class="org">Vaasa Startup Factory</div>
-          <ul>
-            <li>Co-founded BestB4, a real-time discount platform connecting Finnish grocery retailers with price-sensitive, sustainability-minded shoppers to cut food waste. Built as a two-month project in Summer Bloom 2026, the Vaasa Startup Factory student incubator run with the six universities of Vaasa. The project closed when the programme ended.</li>
-          </ul>
-        </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34;--dl:160ms"></div></div><small>Incubator project</small></div>
-      </article>
-
-      <article class="tl-row">
-        <div class="tl-when mono">Oct 2023 –<br>Nov 2024</div>
-        <div class="tl-what">
-          <h3>US (Olympics) Sports Editor</h3>
-          <div class="org">EssentiallySports &amp; The SportsRush</div>
-          <ul>
-            <li>Delivered 12 to 15 pieces daily against same-day deadlines for a platform with 10M+ monthly readers, holding accuracy under a constant stream of new requests.</li>
-            <li>Coordinated contributor schedules across multiple time zones and led editorial quality for Olympic Sports.</li>
-          </ul>
-        </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.62;--dl:320ms"></div></div><small>10M+ readers</small></div>
-      </article>
-
-      <article class="tl-row">
-        <div class="tl-when mono">Oct 2021 –<br>Sep 2023</div>
-        <div class="tl-what">
-          <h3>Content Writer &amp; Data Updater</h3>
-          <div class="org">NapCloud &amp; Kidadl</div>
-          <ul>
-            <li>Maintained structured information systems for data accuracy, version control, and documentation quality across large content libraries.</li>
-          </ul>
-        </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.78;--dl:480ms"></div></div><small>Version control</small></div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     04 · CASE STUDIES
+     02 · WORK
      ============================================================ -->
 <section class="sec" id="work" data-station="Case studies" data-thread="0.72">
   <div class="wrap">
     <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.04 / Case studies</div>
+      <div class="sec-tag mono"><i></i>ST.02 / Work</div>
       <div>
-        <h2>Four systems, measured.</h2>
-        <p class="sub">A live certification cohort, a simulated factory cell, a packaging configuration for 400 SKUs, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
+        <h2>Four projects, measured.</h2>
+        <p class="sub">A live certification cohort at SkillCat, then three graded M.Sc. projects: packaging for 400 ABB switch models, a simulated factory cell, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
       </div>
     </div>
 
@@ -1045,7 +862,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.2 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.1 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
         <div class="figure-body">
           <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph, a weekly pass-rate sparkline, and a risk triage bar splitting the 79 candidates into 46 classified On Track and 33 flagged for weekly review.">
             <!-- enrolled -->
@@ -1117,10 +934,132 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10, from the last sync on 9 August 2026. Candidate count excludes test accounts present in week 1.</p>
     </article>
 
+
+    <!-- ---- SKILLCAT SYSTEMS ---- -->
+    <div class="case case-systems" id="skillcat-systems">
+      <div class="case-top">
+        <div class="case-id mono"><b>Also at SkillCat</b>Nov 2024 to<br>Sep 2026</div>
+        <div>
+          <h3>What the team ran on</h3>
+          <div class="ctx mono">Onboarding · QA pipeline · Reporting · Workflow record</div>
+          <div class="specs">
+          <div class="spec">
+            <div>
+              <h4>Onboarding system</h4>
+              <p>A 30-day framework spanning instructional design, visual design, QA, digitization, and all-teams. Every hire tracked through it hit 100% on-time completion at every weekly checkpoint.</p>
+            </div>
+            <div class="flag mono">100% on time</div>
+          </div>
+          <div class="spec">
+            <div>
+              <h4>Master Checklist v1.05</h4>
+              <p>A 15-stage course production QA pipeline refined through more than five iterations, with explicit human-versus-AI task allocation.</p>
+            </div>
+            <div class="flag mono">15 stages</div>
+          </div>
+          <div class="spec">
+            <div>
+              <h4>QFT Trends dashboard</h4>
+              <p>A live Looker Studio dashboard consolidating the team's quality-ticket data, reviewed with leadership weekly.</p>
+            </div>
+            <div class="flag mono hold">Internal</div>
+          </div>
+          <div class="spec">
+            <div>
+              <h4>CDLC workflow record</h4>
+              <p>The course development lifecycle as it is actually configured, not as it is described in a deck: one Epic per course, the Course Type field that forks every work type created beneath it, and SOP v1.0 across seven stages and five roles. Traced to the bottom of the tree against 418 epics and published as a record you can browse.</p>
+            </div>
+            <a class="flag mono live" href="https://palsampurna16-prog.github.io/cdlc-workflow-record/" target="_blank" rel="noopener noreferrer" aria-label="Browse the CDLC workflow record, opens in a new tab">Browse it<span class="ext" aria-hidden="true">&#8599;</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <!-- ---- CASE 3 : ABB PACKAGING ---- -->
+    <article class="case" id="case-abb">
+      <div class="case-top">
+        <div class="case-id mono"><b>Case 02</b>TUTA3240<br>Supply Chain Design<br>Grade 5 / 5</div>
+        <div>
+          <h3>ABB Hurricane packaging optimisation</h3>
+          <div class="ctx mono">400 SKUs · 30+ box types · Individual project · Industry brief from ABB</div>
+          <p class="body">ABB packs its Hurricane switches, 400 models from 1.5 to 95 kg, by hand into more than 30 corrugated box types. After a visit to ABB, I took the dimensions and weights for every switch and box pair and calculated the void percentage for each. Several box families ran at 50 to 74% empty space.</p>
+          <p class="body">I proposed two concepts. The first is a height-adjustable box with pre-scored crease lines, which also lets two near-identical box families share one footprint. The second is a kirigami honeycomb insert cut from flat corrugated sheet, replacing loose filler. Combined, I estimated about 12% less packaging weight (10% less corrugated board per box, 30% fewer inserts) and roughly 0.3 kg CO2e saved per unit, in a mono-material design aligned with the upcoming PPWR.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.2 / Void share by box family and proposed concepts <span class="grow"></span> <span>From the ABB data</span></div>
+        <div class="figure-body">
+          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Bar chart of void share in four high-void ABB box families: 780 by 580 by 500 at about 50 percent, 780 by 580 by 200 at about 50 percent, 620 by 390 by 290 up to about 58 percent, and 550 by 300 by 320 ranging from 50 to 74 percent across more than 20 switch models. Beside it, two proposed concepts, a height-adjustable box and a kirigami honeycomb insert, combine into one system estimated to cut packaging weight by about 12 percent and save about 0.3 kilograms of CO2e per unit.">
+            <text class="fd" x="20" y="24">VOID SHARE · HIGH-VOID BOX FAMILIES</text>
+
+            <!-- axis and 50% reference -->
+            <path class="ln thin dw" d="M150 44 V 262"/>
+            <path class="ln dashed dw" d="M350 44 V 262"/>
+            <text class="fd" x="150" y="280">0%</text>
+            <text class="fd" x="334" y="280">50%</text>
+            <text class="fd" x="534" y="280">100%</text>
+
+            <!-- 780x580x500 : ~50% -->
+            <text class="fd lbl-ink" x="20" y="72">780×580×500</text>
+            <rect class="fillsl fd" x="150" y="60" width="200" height="16"/>
+            <text class="fd" x="360" y="72">~50% · HEAVY SWITCHES</text>
+
+            <!-- 780x580x200 : ~50% -->
+            <text class="fd lbl-ink" x="20" y="124">780×580×200</text>
+            <rect class="fillsl fd" x="150" y="112" width="200" height="16"/>
+            <text class="fd" x="360" y="124">~50%</text>
+
+            <!-- 620x390x290 : up to ~58% -->
+            <text class="fd lbl-ink" x="20" y="176">620×390×290</text>
+            <rect class="fillsl fd" x="150" y="164" width="232" height="16"/>
+            <text class="fd" x="392" y="176">UP TO ~58%</text>
+
+            <!-- 550x300x320 : 50-74% -->
+            <text class="fd lbl-ink" x="20" y="228">550×300×320</text>
+            <rect class="fillsl fd" x="150" y="216" width="200" height="16"/>
+            <rect class="fillin fd" x="350" y="216" width="96" height="16" opacity=".55"/>
+            <text class="fd lbl-in" x="456" y="228">50–74% · 20+ MODELS</text>
+
+            <!-- proposed concepts -->
+            <text class="fd" x="620" y="24">PROPOSED CONCEPTS</text>
+            <g class="hot"><rect class="st dw nd" x="620" y="44" width="280" height="48"/></g>
+            <text class="fd lbl-ink" x="636" y="65">C1 · HEIGHT-ADJUSTABLE BOX</text>
+            <text class="fd" x="636" y="81">PRE-SCORED CREASES · SHARED FOOTPRINT</text>
+
+            <g class="hot"><rect class="st dw nd" x="620" y="112" width="280" height="48"/></g>
+            <text class="fd lbl-ink" x="636" y="133">C2 · KIRIGAMI HONEYCOMB INSERT</text>
+            <text class="fd" x="636" y="149">REPLACES LOOSE FILLER</text>
+
+            <path class="ln dw" d="M620 68 H 600 V 214 H 620 M620 136 H 600"/>
+
+            <g class="hot"><rect class="st dw nd" x="620" y="184" width="280" height="78" style="stroke:var(--sage)"/></g>
+            <text class="fd lbl-sg" x="636" y="205">COMBINED SYSTEM · ESTIMATED</text>
+            <text class="fd" x="636" y="225">≈12% LESS PACKAGING WEIGHT</text>
+            <text class="fd" x="636" y="241">≈0.3 kg CO2e SAVED PER UNIT</text>
+            <text class="fd" x="620" y="280">MONO-MATERIAL · ALIGNED WITH UPCOMING PPWR</text>
+
+            <path class="ln thin dw" d="M20 306 H 900"/>
+            <text class="fd" x="20" y="330">400 SWITCH MODELS · 30+ BOX TYPES · 1.5 TO 95 kg</text>
+            <text class="fd" x="20" y="346">TUTA3240 · INDIVIDUAL PROJECT · SITE VISIT TO ABB</text>
+          </svg>
+        </div>
+      </div>
+
+      <dl class="results">
+        <div><dt class="mono">SKUs analysed</dt><dd><span class="num">400</span></dd></div>
+        <div><dt class="mono">Box types</dt><dd><span class="num">30</span><small>+</small></dd></div>
+        <div class="accent"><dt class="mono">Packaging weight, est.</dt><dd><span class="num">−12</span><small>%</small></dd></div>
+        <div><dt class="mono">Per unit, est.</dt><dd><span class="num">0.3</span><small>kg CO2e</small></dd></div>
+      </dl>
+    </article>
+
     <!-- ---- CASE 2 : FACTORY CELL ---- -->
     <article class="case" id="case-sim">
       <div class="case-top">
-        <div class="case-id mono"><b>Case 02</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
+        <div class="case-id mono"><b>Case 03</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
         <div>
           <h3>Factory cell production simulation</h3>
           <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
@@ -1129,7 +1068,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.1 / Material flow, baseline vs iteration 3 <span class="grow"></span> <span>Units per hour</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.3 / Material flow, baseline vs iteration 3 <span class="grow"></span> <span>Units per hour</span></div>
         <div class="figure-body">
           <div id="cellWrap" hidden>
             <div class="cell-stage" id="cellStage">
@@ -1250,85 +1189,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </dl>
     </article>
 
-    <!-- ---- CASE 3 : ABB PACKAGING ---- -->
-    <article class="case" id="case-abb">
-      <div class="case-top">
-        <div class="case-id mono"><b>Case 03</b>TUTA3240<br>Supply Chain Design<br>Grade 5 / 5</div>
-        <div>
-          <h3>ABB Hurricane packaging optimisation</h3>
-          <div class="ctx mono">400 SKUs · 30+ box types · Individual project · Industry brief from ABB</div>
-          <p class="body">ABB packs its Hurricane switches, 400 models from 1.5 to 95 kg, by hand into more than 30 corrugated box types. After a visit to ABB, I took the dimensions and weights for every switch and box pair and calculated the void percentage for each. Several box families ran at 50 to 74% empty space.</p>
-          <p class="body">I proposed two concepts. The first is a height-adjustable box with pre-scored crease lines, which also lets two near-identical box families share one footprint. The second is a kirigami honeycomb insert cut from flat corrugated sheet, replacing loose filler. Combined, I estimated about 12% less packaging weight (10% less corrugated board per box, 30% fewer inserts) and roughly 0.3 kg CO2e saved per unit, in a mono-material design aligned with the upcoming PPWR.</p>
-        </div>
-      </div>
-
-      <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.3 / Void share by box family and proposed concepts <span class="grow"></span> <span>From the ABB data</span></div>
-        <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Bar chart of void share in four high-void ABB box families: 780 by 580 by 500 at about 50 percent, 780 by 580 by 200 at about 50 percent, 620 by 390 by 290 up to about 58 percent, and 550 by 300 by 320 ranging from 50 to 74 percent across more than 20 switch models. Beside it, two proposed concepts, a height-adjustable box and a kirigami honeycomb insert, combine into one system estimated to cut packaging weight by about 12 percent and save about 0.3 kilograms of CO2e per unit.">
-            <text class="fd" x="20" y="24">VOID SHARE · HIGH-VOID BOX FAMILIES</text>
-
-            <!-- axis and 50% reference -->
-            <path class="ln thin dw" d="M150 44 V 262"/>
-            <path class="ln dashed dw" d="M350 44 V 262"/>
-            <text class="fd" x="150" y="280">0%</text>
-            <text class="fd" x="334" y="280">50%</text>
-            <text class="fd" x="534" y="280">100%</text>
-
-            <!-- 780x580x500 : ~50% -->
-            <text class="fd lbl-ink" x="20" y="72">780×580×500</text>
-            <rect class="fillsl fd" x="150" y="60" width="200" height="16"/>
-            <text class="fd" x="360" y="72">~50% · HEAVY SWITCHES</text>
-
-            <!-- 780x580x200 : ~50% -->
-            <text class="fd lbl-ink" x="20" y="124">780×580×200</text>
-            <rect class="fillsl fd" x="150" y="112" width="200" height="16"/>
-            <text class="fd" x="360" y="124">~50%</text>
-
-            <!-- 620x390x290 : up to ~58% -->
-            <text class="fd lbl-ink" x="20" y="176">620×390×290</text>
-            <rect class="fillsl fd" x="150" y="164" width="232" height="16"/>
-            <text class="fd" x="392" y="176">UP TO ~58%</text>
-
-            <!-- 550x300x320 : 50-74% -->
-            <text class="fd lbl-ink" x="20" y="228">550×300×320</text>
-            <rect class="fillsl fd" x="150" y="216" width="200" height="16"/>
-            <rect class="fillin fd" x="350" y="216" width="96" height="16" opacity=".55"/>
-            <text class="fd lbl-in" x="456" y="228">50–74% · 20+ MODELS</text>
-
-            <!-- proposed concepts -->
-            <text class="fd" x="620" y="24">PROPOSED CONCEPTS</text>
-            <g class="hot"><rect class="st dw nd" x="620" y="44" width="280" height="48"/></g>
-            <text class="fd lbl-ink" x="636" y="65">C1 · HEIGHT-ADJUSTABLE BOX</text>
-            <text class="fd" x="636" y="81">PRE-SCORED CREASES · SHARED FOOTPRINT</text>
-
-            <g class="hot"><rect class="st dw nd" x="620" y="112" width="280" height="48"/></g>
-            <text class="fd lbl-ink" x="636" y="133">C2 · KIRIGAMI HONEYCOMB INSERT</text>
-            <text class="fd" x="636" y="149">REPLACES LOOSE FILLER</text>
-
-            <path class="ln dw" d="M620 68 H 600 V 214 H 620 M620 136 H 600"/>
-
-            <g class="hot"><rect class="st dw nd" x="620" y="184" width="280" height="78" style="stroke:var(--sage)"/></g>
-            <text class="fd lbl-sg" x="636" y="205">COMBINED SYSTEM · ESTIMATED</text>
-            <text class="fd" x="636" y="225">≈12% LESS PACKAGING WEIGHT</text>
-            <text class="fd" x="636" y="241">≈0.3 kg CO2e SAVED PER UNIT</text>
-            <text class="fd" x="620" y="280">MONO-MATERIAL · ALIGNED WITH UPCOMING PPWR</text>
-
-            <path class="ln thin dw" d="M20 306 H 900"/>
-            <text class="fd" x="20" y="330">400 SWITCH MODELS · 30+ BOX TYPES · 1.5 TO 95 kg</text>
-            <text class="fd" x="20" y="346">TUTA3240 · INDIVIDUAL PROJECT · SITE VISIT TO ABB</text>
-          </svg>
-        </div>
-      </div>
-
-      <dl class="results">
-        <div><dt class="mono">SKUs analysed</dt><dd><span class="num">400</span></dd></div>
-        <div><dt class="mono">Box types</dt><dd><span class="num">30</span><small>+</small></dd></div>
-        <div class="accent"><dt class="mono">Packaging weight, est.</dt><dd><span class="num">−12</span><small>%</small></dd></div>
-        <div><dt class="mono">Per unit, est.</dt><dd><span class="num">0.3</span><small>kg CO2e</small></dd></div>
-      </dl>
-    </article>
-
     <!-- ---- CASE 4 : SCENARIO PLANNING ---- -->
     <article class="case" id="case-scenario">
       <div class="case-top">
@@ -1342,7 +1202,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 4.4 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.4 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
         <div class="figure-body">
           <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four policy alternatives, minimal restrictions, testing and quarantine, border closure and internal lockdown, feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and expected value with a containment probability, whose combined result was swept across a 300 by 300 grid. Testing and quarantine is optimal across the widest range; minimal restrictions win only when containment is likely and the decision-maker is optimistic; internal lockdown only when containment is unlikely and the decision-maker is pessimistic.">
             <text class="fd" x="20" y="24">FOUR POLICY ALTERNATIVES · MINISTRY OF HEALTH AND WELLBEING</text>
@@ -1417,200 +1277,137 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 </section>
 
 <!-- ============================================================
-     05 · DECISION ANALYSIS
+     03 · EXPERIENCE
      ============================================================ -->
-<section class="sec" id="analysis" data-station="Decision analysis" data-thread="0.42">
+<section class="sec" id="history" data-station="Operating history" data-thread="0.20">
   <div class="wrap">
     <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.05 / Analysis</div>
+      <div class="sec-tag mono"><i></i>ST.03 / Experience</div>
       <div>
-        <h2>When the answer depends on what you assume, test the assumption.</h2>
-        <p class="sub">The pandemic policy model is Case 04. Alongside it: a personal career decision modelled as a multi-objective problem under expected value and minimax regret, an independent lab project, and a SAS study on education and financial behaviour.</p>
+        <h2>Now in EHS at Danfoss, after two years in quality at SkillCat.</h2>
+        <p class="sub">Cross-functional, and usually starting from a blank sheet.</p>
       </div>
     </div>
 
-    <div class="grid2">
-      <div class="mono sec-tag" style="padding-top:.1rem">Fig. 5.1 / Decision structure</div>
-      <div>
-        <div class="figure">
-          <div class="figure-head mono"><span class="dot"></span> Decision tree, multi-objective <span class="grow"></span> <span>Optimal path highlighted</span></div>
-          <div class="figure-body">
-            <svg class="dg" viewBox="0 0 560 360" role="img" aria-label="A decision tree with four outcome branches and their expected values, the optimal path highlighted.">
-              <!-- tree -->
-              <text class="fd" x="20" y="24">DECISION TREE · MULTI-OBJECTIVE</text>
-
-              <path class="ln-sg dw" d="M60 180 C 130 180, 150 100, 230 100"/>
-              <path class="ln dashed dw" d="M60 180 C 130 180, 150 262, 230 262"/>
-
-              <path class="ln-sg dw" d="M230 100 C 300 100, 320 62, 400 62"/>
-              <path class="ln dashed dw" d="M230 100 C 300 100, 320 142, 400 142"/>
-              <path class="ln dashed dw" d="M230 262 C 300 262, 320 220, 400 220"/>
-              <path class="ln dashed dw" d="M230 262 C 300 262, 320 300, 400 300"/>
-
-              <g class="hot"><circle class="dot nd" cx="60" cy="180" r="5.5"/><text class="fd" x="30" y="204">START</text></g>
-              <g class="hot"><rect class="st dw nd" x="222" y="92" width="16" height="16"/><text class="fd lbl-sg" x="196" y="84">INCOME</text></g>
-              <g class="hot"><rect class="st dw nd" x="222" y="254" width="16" height="16"/><text class="fd" x="192" y="290">COMFORT</text></g>
-
-              <circle class="fillsg fd" cx="400" cy="62" r="4"/>
-              <circle class="dot fd" cx="400" cy="142" r="3.4"/>
-              <circle class="dot fd" cx="400" cy="220" r="3.4"/>
-              <circle class="dot fd" cx="400" cy="300" r="3.4"/>
-
-              <text class="fd lbl-sg" x="416" y="58">OPTIMAL · EV 0.82</text>
-              <text class="fd" x="416" y="146">EV 0.61</text>
-              <text class="fd" x="416" y="224">EV 0.54</text>
-              <text class="fd" x="416" y="304">EV 0.39</text>
-
-              <path class="ln thin dw" d="M60 330 H 500"/>
-              <text class="fd" x="60" y="346">"MY FALL 2026" · GNU OCTAVE · SENSITIVITY ANALYSIS</text>
-
-              <path class="flow" style="--sp:4s" d="M60 180 C 130 180, 150 100, 230 100"/>
-              <path class="flow" style="--sp:4s;--dl:1400ms" d="M230 100 C 300 100, 320 62, 400 62"/>
-            </svg>
-          </div>
+    <div class="tl">
+      <article class="tl-row">
+        <div class="tl-when mono">Oct 2026 –<br>Present</div>
+        <div class="tl-what">
+          <h3>EHS Trainee</h3>
+          <div class="org">Danfoss. Environment, health and safety. Started October 2026.</div>
         </div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.06;--dl:0ms"></div></div><small>Current</small></div>
+      </article>
 
-        <div class="specs" style="margin-top:2.2rem">
-          <div class="spec">
-            <div>
-              <h4>Independent lab project</h4>
-              <p>TUTA3076, supervised by Prof. Petri Helo.</p>
-            </div>
-            <div class="flag mono">Pass</div>
-          </div>
-          <div class="spec">
-            <div>
-              <h4>SAS statistics project</h4>
-              <p>Education and financial behaviour. Kruskal-Wallis test and logistic regression on a bank customer dataset.</p>
-            </div>
-            <div class="flag mono">SAS</div>
-          </div>
+      <article class="tl-row">
+        <div class="tl-when mono">Nov 2024 –<br>Sep 2026</div>
+        <div class="tl-what">
+          <h3>Quality Team Lead</h3>
+          <div class="org">SkillCat, remote. Skilled-trades e-learning, 400,000+ tradespeople trained. Promoted from Content Quality Analyst (Jan 2026).</div>
+          <ul>
+            <li>Led a team of 5 across quality assurance, content operations, and digitization.</li>
+            <li>Designed and owned the SkillMap Cohort 1 Tracker (79 candidates, closed August 2026).</li>
+            <li>Built a 30-day, 5-department onboarding framework from scratch.</li>
+            <li>Developed a 15-stage course production QA pipeline, Master Checklist v1.05, through 5+ revisions.</li>
+            <li>Reported to leadership weekly through a live Looker Studio dashboard that consolidated the team's quality-ticket data.</li>
+            <li>Ran ad-hoc audits across 2,000+ questions in 8 flagship courses, correcting faulty items, closing a PPE-labeling gap with a hazard-symbol fix, and rewriting duplicate BSP questions into situational formats.</li>
+            <li>Facilitated daily team check-ins and end-of-day reviews, 3 to 4 weekly working sessions on active initiatives, and two weeks of daily onboarding sessions for every new hire.</li>
+            <li>Pushed back on a proposal for full deadline automation from the Chief of Staff and recommended a manual-review dashboard with a bulk-fail action instead.</li>
+            <li>Tested and evaluated AI agent performance for slide digitization and SME tracking workflows.</li>
+          </ul>
         </div>
-      </div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:1;--dl:160ms"></div></div><small>Team of 5</small></div>
+      </article>
+
+      <article class="tl-row">
+        <div class="tl-when mono">Jun 2026 –<br>Aug 2026</div>
+        <div class="tl-what">
+          <h3>Founder in Residence</h3>
+          <div class="org">Vaasa Startup Factory</div>
+          <ul>
+            <li>Co-founded BestB4, a real-time discount platform connecting Finnish grocery retailers with price-sensitive, sustainability-minded shoppers to cut food waste. Built as a two-month project in Summer Bloom 2026, the Vaasa Startup Factory student incubator run with the six universities of Vaasa. The project closed when the programme ended.</li>
+          </ul>
+        </div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34;--dl:160ms"></div></div><small>Incubator project</small></div>
+      </article>
+
+      <article class="tl-row">
+        <div class="tl-when mono">Oct 2023 –<br>Nov 2024</div>
+        <div class="tl-what">
+          <h3>US (Olympics) Sports Editor</h3>
+          <div class="org">EssentiallySports &amp; The SportsRush</div>
+          <ul>
+            <li>Delivered 12 to 15 pieces daily against same-day deadlines for a platform with 10M+ monthly readers, holding accuracy under a constant stream of new requests.</li>
+            <li>Coordinated contributor schedules across multiple time zones and led editorial quality for Olympic Sports.</li>
+          </ul>
+        </div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.62;--dl:320ms"></div></div><small>10M+ readers</small></div>
+      </article>
+
+      <article class="tl-row">
+        <div class="tl-when mono">Oct 2021 –<br>Sep 2023</div>
+        <div class="tl-what">
+          <h3>Content Writer &amp; Data Updater</h3>
+          <div class="org">NapCloud &amp; Kidadl</div>
+          <ul>
+            <li>Maintained structured information systems for data accuracy, version control, and documentation quality across large content libraries.</li>
+          </ul>
+        </div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.78;--dl:480ms"></div></div><small>Version control</small></div>
+      </article>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     06 · SYSTEMS IN OPERATION (network)
-     ============================================================ -->
-<section class="sec" id="systems" data-station="Systems in operation" data-thread="0.58">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.06 / Systems</div>
-      <div>
-        <h2>What the SkillCat team ran on.</h2>
-        <p class="sub">Onboarding, course production, QA, and reporting are four views of the same network. Every hire, every course, and every ticket moved through the same set of nodes.</p>
-      </div>
-    </div>
-
-    <div class="grid2">
-      <div class="mono sec-tag" style="padding-top:.1rem">Fig. 6.1 / Team network</div>
-      <div>
-        <div class="figure">
-          <div class="figure-head mono"><span class="dot"></span> Cross-functional information flow <span class="grow"></span> <span>Hover a node</span></div>
-          <div class="figure-body">
-            <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Network diagram with a team lead node at the centre connected to quality assurance, content operations, digitization, instructional design, visual design, subject matter experts, the chief of staff and learners.">
-              <g id="netEdges"></g>
-              <g id="netNodes"></g>
-              <g id="netFlow"></g>
-              <text class="fd" x="20" y="388">5 DEPARTMENTS · 30-DAY ONBOARDING · 15-STAGE QA PIPELINE</text>
-            </svg>
-          </div>
-        </div>
-
-        <div class="specs" style="margin-top:2.2rem">
-          <div class="spec">
-            <div>
-              <h4>Onboarding system</h4>
-              <p>A 30-day framework spanning instructional design, visual design, QA, digitization, and all-teams. Every hire tracked through it hit 100% on-time completion at every weekly checkpoint.</p>
-            </div>
-            <div class="flag mono">100% on time</div>
-          </div>
-          <div class="spec">
-            <div>
-              <h4>Master Checklist v1.05</h4>
-              <p>A 15-stage course production QA pipeline refined through more than five iterations, with explicit human-versus-AI task allocation.</p>
-            </div>
-            <div class="flag mono">15 stages</div>
-          </div>
-          <div class="spec">
-            <div>
-              <h4>QFT Trends dashboard</h4>
-              <p>A live Looker Studio dashboard consolidating the team's quality-ticket data, reviewed with leadership weekly.</p>
-            </div>
-            <div class="flag mono hold">Internal</div>
-          </div>
-          <div class="spec">
-            <div>
-              <h4>CDLC workflow record</h4>
-              <p>The course development lifecycle as it is actually configured, not as it is described in a deck: one Epic per course, the Course Type field that forks every work type created beneath it, and SOP v1.0 across seven stages and five roles. Traced to the bottom of the tree against 418 epics and published as a record you can browse.</p>
-            </div>
-            <a class="flag mono live" href="https://palsampurna16-prog.github.io/cdlc-workflow-record/" target="_blank" rel="noopener noreferrer" aria-label="Browse the CDLC workflow record, opens in a new tab">Browse it<span class="ext" aria-hidden="true">&#8599;</span></a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     07 · CAPABILITY
+     04 · SKILLS
      ============================================================ -->
 <section class="sec" id="skills" data-station="Capability" data-thread="0.24">
   <div class="wrap">
     <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.07 / Capability</div>
+      <div class="sec-tag mono"><i></i>ST.04 / Skills</div>
       <div>
-        <h2>Toolset.</h2>
-        <p class="sub">Risk and governance on one side, simulation, delivery and data on the other. I use both in the same week.</p>
+        <h2>Skills.</h2>
+        <p class="sub">Operations and quality on one side; environment, simulation and data on the other.</p>
       </div>
     </div>
 
     <div class="caps">
       <div class="cap">
-        <h4>Risk &amp; governance</h4><div class="u"></div>
-        <ul><li>Risk identification and assessment</li><li>Rule-based risk classification</li><li>Escalation tracking and closure</li><li>Root cause analysis</li><li>Scenario planning</li><li>Sensitivity analysis</li><li>Process documentation and governance</li><li>Stakeholder and supplier coordination</li></ul>
+        <h4>Operations &amp; quality</h4><div class="u"></div>
+        <ul><li>QA pipeline design</li><li>Process mapping and documentation</li><li>Rule-based risk classification</li><li>Escalation tracking and reporting</li><li>Root cause analysis</li><li>KPI development</li><li>Bottleneck analysis</li></ul>
       </div>
       <div class="cap">
-        <h4>Data &amp; analytics</h4><div class="u" style="--dl:90ms"></div>
-        <ul><li>Excel (pivot tables, dashboards, advanced formulas)</li><li>Power BI (basic)</li><li>Looker Studio</li><li>Google Sheets + Apps Script</li><li>SAS (logistic regression, non-parametric testing)</li><li>GNU Octave</li><li>Data quality management</li><li>Trend identification</li></ul>
+        <h4>Environment &amp; circularity</h4><div class="u" style="--dl:90ms"></div>
+        <ul><li>Life cycle assessment (openLCA)</li><li>Material flow analysis</li><li>Waste stream and hotspot identification</li><li>Packaging and material reduction</li><li>PPWR</li></ul>
       </div>
       <div class="cap">
-        <h4>Project &amp; agile</h4><div class="u" style="--dl:180ms"></div>
-        <ul><li>Microsoft 365 (Word, Excel, PowerPoint, Teams, Copilot)</li><li>JIRA</li><li>Confluence</li><li>Asana</li><li>Notion</li><li>Google Workspace</li><li>Slack</li><li>Scrum</li><li>Kanban</li><li>Sprint planning</li><li>Backlog refinement</li><li>Retrospectives</li><li>Stand-ups</li></ul>
+        <h4>Data &amp; analysis</h4><div class="u" style="--dl:180ms"></div>
+        <ul><li>Excel</li><li>Google Sheets + Apps Script</li><li>Looker Studio</li><li>Power BI (basic)</li><li>SAS</li><li>GNU Octave</li><li>Scenario and sensitivity analysis</li></ul>
       </div>
       <div class="cap">
-        <h4>Lean &amp; operations</h4><div class="u" style="--dl:270ms"></div>
-        <ul><li>Lean manufacturing principles</li><li>Process analysis</li><li>Time study concepts</li><li>Line balancing</li><li>Quality &amp; reliability management</li><li>KPI development</li><li>Operations research</li></ul>
+        <h4>Project delivery</h4><div class="u" style="--dl:270ms"></div>
+        <ul><li>Jira</li><li>Confluence</li><li>Asana</li><li>Scrum and Kanban facilitation</li><li>Stakeholder reporting</li><li>IPMA Foundation (2026)</li></ul>
       </div>
       <div class="cap">
-        <h4>AI tools</h4><div class="u" style="--dl:360ms"></div>
-        <ul><li>Copilot</li><li>Claude</li><li>ChatGPT</li><li>Perplexity</li><li>Daily applied use</li><li>Evaluating in-house AI agents</li><li>IBM AI/Cloud (in progress)</li></ul>
+        <h4>Simulation</h4><div class="u" style="--dl:360ms"></div>
+        <ul><li>Visual Components</li><li>3D production simulation</li><li>Human-robot collaboration</li><li>Layout optimisation</li></ul>
       </div>
       <div class="cap">
-        <h4>Simulation &amp; manufacturing</h4><div class="u" style="--dl:450ms"></div>
-        <ul><li>VisualComponents</li><li>3D production simulation</li><li>Digital twin modelling</li><li>Internal logistics simulation</li><li>Material flow analysis</li><li>Bottleneck identification</li><li>Layout optimisation</li><li>Human-robot collaboration</li><li>openLCA (life-cycle assessment)</li></ul>
-      </div>
-      <div class="cap">
-        <h4>Working style</h4><div class="u" style="--dl:540ms"></div>
-        <ul><li>Analytical thinking</li><li>Structured problem-solving</li><li>Cross-functional collaboration</li><li>Documentation discipline</li><li>Proactive communication</li><li>Stakeholder alignment</li><li>Meeting facilitation</li></ul>
-      </div>
-      <div class="cap">
-        <h4>Languages</h4><div class="u" style="--dl:630ms"></div>
-        <ul><li>English (C1, IELTS 7.5)</li><li>Bengali (native)</li><li>Hindi (fluent)</li><li>Finnish (B1, actively studying)</li><li>Sanskrit (limited)</li><li>German (elementary)</li><li>Korean (elementary)</li></ul>
+        <h4>Languages</h4><div class="u" style="--dl:450ms"></div>
+        <ul><li>English (C1, IELTS 7.5)</li><li>Finnish (B1, actively studying)</li><li>Bengali (native)</li><li>Hindi (fluent)</li></ul>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     08 · CREDENTIALS
+     05 · EDUCATION
      ============================================================ -->
 <section class="sec" id="credentials" data-station="Credentials" data-thread="0.50">
   <div class="wrap">
     <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.08 / Credentials</div>
+      <div class="sec-tag mono"><i></i>ST.05 / Education</div>
       <div>
         <h2>Education and certification.</h2>
       </div>
@@ -1620,9 +1417,10 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="cred-block">
         <h4>Education</h4>
         <div class="cred"><div><strong>M.Sc. Economics and Business Administration, Industrial Engineering &amp; Management</strong><span>University of Vaasa, Finland. In progress, expected August 2027. Active student status. 86 ECTS completed.</span></div><div class="g mono">GPA 4.09</div></div>
-        <div class="cred"><div><strong>Key courses, grade 5 / 5</strong><span>Decision Analysis, Operations Management Methods, Supply Chain Design, Modelling &amp; Simulation, Introduction to Operations Management. Operations Research 4/5, Quality &amp; Reliability Management 3/5.</span></div><div class="g mono">5 / 5</div></div>
+        <div class="cred"><div><strong>Key courses, grade 5 / 5</strong><span>Decision Analysis, Operations Management Methods, Supply Chain Design, Modelling &amp; Simulation, Introduction to Operations Management. Operations Research 4/5.</span></div><div class="g mono">5 / 5</div></div>
         <div class="cred"><div><strong>Student exchange, Micro-Nano Technologies &amp; Sensors for Global Challenges</strong><span>Universidad de Cantabria, Santander, Spain. Erasmus+, Jun to Jul 2026.</span></div><div class="g mono">Erasmus+</div></div>
         <div class="cred"><div><strong>International Summer School on Entrepreneurship and Venturing</strong><span>University of Vaasa, Finland. International Entrepreneurship, Ideation and Venture Creation, Start-up Scouting and Valuation. 10 to 28 August 2026.</span></div><div class="g mono">11 ECTS</div></div>
+        <div class="cred"><div><strong>Open university studies, University of Helsinki</strong><span>Introduction to Circular Economy, Leadership for Sustainable Change, Forests and Climate Change.</span></div><div class="g mono">In progress</div></div>
         <div class="cred"><div><strong>Finnish language studies, Finnish 3 &amp; 4</strong><span>Metropolia University of Applied Sciences, Helsinki. Completed.</span></div><div class="g mono">B1</div></div>
         <div class="cred"><div><strong>M.Sc. Economics</strong><span>Vidyasagar University, India, 2021.</span></div><div class="g mono">2021</div></div>
         <div class="cred"><div><strong>B.Sc. Economics</strong><span>Midnapore College Autonomous, India, 2019.</span></div><div class="g mono">2019</div></div>
@@ -1632,21 +1430,14 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <h4>Certification</h4>
         <div class="cred"><div><strong>IPMA Foundation Certificate in Project Management</strong><span>Projektiammattilaiset PRY / IPMA Finland.</span></div><div class="g mono">25 May 2026</div></div>
         <div class="cred"><div><strong>Google Data Analytics Professional Certificate</strong><span>Google.</span></div><div class="g mono">Complete</div></div>
-        <div class="cred"><div><strong>JPMorgan Chase &amp; Co. Global Finance and Business Management</strong><span>Virtual experience program.</span></div><div class="g mono">Complete</div></div>
-        <div class="cred"><div><strong>Fundamentals of Digital Marketing</strong><span>Google Digital Unlocked.</span></div><div class="g mono">Complete</div></div>
         <div class="cred"><div><strong>IELTS Band 7.5</strong><span>C1 English.</span></div><div class="g mono">7.5</div></div>
-        <div class="cred"><div><strong>Summer Bloom 2026, student incubator</strong><span>Vaasa Startup Factory, with the six universities of Vaasa. Certificate of participation.</span></div><div class="g mono">2 months</div></div>
-        <div class="cred"><div><strong>IBM Skills for AI</strong><span>Cloud, AI fundamentals, cloud coding.</span></div><div class="g mono">In progress</div></div>
 
         <h4 style="margin-top:2.4rem">Outside the system</h4>
         <ul class="offsys">
           <li>Volunteer, Kissa Talo cat rescue, Vaasa</li>
-          <li>Dog sitting and walking</li>
           <li>Photography, food and nature</li>
           <li>Sewing and clothing design</li>
           <li>Architectural sketching, certified</li>
-          <li>Reading</li>
-          <li>Seven languages</li>
         </ul>
       </div>
     </div>
@@ -1654,12 +1445,12 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 </section>
 
 <!-- ============================================================
-     09 · TITLE BLOCK
+     06 · CONTACT
      ============================================================ -->
 <section class="sec" id="contact" data-station="Title block" data-thread="0.50">
   <div class="wrap">
     <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.09 / Contact</div>
+      <div class="sec-tag mono"><i></i>ST.06 / Contact</div>
       <div>
         <h2>Get in touch.</h2>
       </div>
@@ -1783,64 +1574,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     poly.style.setProperty("--dur", "1600ms");
   })();
 
-  // team network
-  (function(){
-    var gE = document.getElementById("netEdges");
-    var gN = document.getElementById("netNodes");
-    var gF = document.getElementById("netFlow");
-    if (!gE) return;
-
-    var nodes = [
-      { id:"lead", x:460, y:196, r:7,   label:"TEAM LEAD",       anchor:"middle", dy:-18, key:true },
-      { id:"qa",   x:206, y:88,  r:4.5, label:"QUALITY ASSURANCE", anchor:"start", dy:-14 },
-      { id:"ops",  x:206, y:308, r:4.5, label:"CONTENT OPS",     anchor:"start", dy:24 },
-      { id:"dig",  x:714, y:88,  r:4.5, label:"DIGITIZATION",    anchor:"end",   dy:-14 },
-      { id:"ins",  x:714, y:308, r:4.5, label:"INSTR. DESIGN",   anchor:"end",   dy:24 },
-      { id:"vis",  x:460, y:52,  r:4.5, label:"VISUAL DESIGN",   anchor:"middle", dy:-14 },
-      { id:"sme",  x:460, y:344, r:4.5, label:"SME NETWORK",     anchor:"middle", dy:24 },
-      { id:"cos",  x:96,  y:196, r:4.5, label:"CHIEF OF STAFF",  anchor:"start", dy:-14 },
-      { id:"lrn",  x:834, y:196, r:5.5, label:"LEARNERS",        anchor:"end",   dy:-14, sage:true }
-    ];
-    var byId = {};
-    nodes.forEach(function(n){ byId[n.id] = n; });
-
-    var edges = [
-      ["lead","qa"],["lead","ops"],["lead","dig"],["lead","ins"],
-      ["lead","vis"],["lead","sme"],["lead","cos"],["lead","lrn"],
-      ["qa","vis"],["vis","dig"],["dig","lrn"],["ins","sme"],["sme","ops"],["ops","cos"],["ins","lrn"]
-    ];
-
-    edges.forEach(function(e, i){
-      var a = byId[e[0]], b = byId[e[1]];
-      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      var d = "M" + a.x + " " + a.y + " Q " + (mx + (my - 200) * 0.10) + " " + (my + (mx - 460) * 0.06) + " " + b.x + " " + b.y;
-      var p = svgEl("path", { d: d, class: "ln thin dw" });
-      p.style.setProperty("--dl", (i * 62) + "ms");
-      p.style.setProperty("--dur", "760ms");
-      gE.appendChild(p);
-
-      if (i === 0 || i === 3 || i === 7 || i === 10){
-        var f = svgEl("path", { d: d, class: "flow" });
-        f.style.setProperty("--sp", (3.6 + i * 0.35) + "s");
-        f.style.setProperty("--dl", (900 + i * 420) + "ms");
-        gF.appendChild(f);
-      }
-    });
-
-    nodes.forEach(function(n, i){
-      var g = svgEl("g", { class: "hot" });
-      var ring = svgEl("circle", { cx:n.x, cy:n.y, r:n.r + 8, class:"ln thin ha" });
-      var c = svgEl("circle", { cx:n.x, cy:n.y, r:n.r,
-        class: (n.sage ? "fillsg nd fd" : (n.key ? "fillink nd fd" : "dot nd fd")) });
-      c.style.setProperty("--dl", (400 + i * 70) + "ms");
-      var t = svgEl("text", { x:n.x, y:n.y + n.dy, "text-anchor":n.anchor,
-        class: (n.sage ? "fd lbl-sg" : (n.key ? "fd lbl-ink" : "fd")) });
-      t.textContent = n.label;
-      t.style.setProperty("--dl", (460 + i * 70) + "ms");
-      g.appendChild(ring); g.appendChild(c); g.appendChild(t);
-      gN.appendChild(g);
-    });
-  })();
 
   /* ==========================================================
      MEASURE DRAWABLE SHAPES  →  set --len for dash reveal
@@ -2104,45 +1837,13 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   }
 
   /* ==========================================================
-     STATION RAIL + INSTRUMENT READOUT
+     PROGRESS BAR
      ========================================================== */
-  var rail = document.getElementById("rail");
-  var railItems = [];
-  sections.forEach(function(sec, i){
-    var d = document.createElement("a");
-    d.className = "rail-item";
-    d.href = "#" + sec.id;
-    d.setAttribute("aria-label", "Go to " + (sec.getAttribute("data-station") || "section"));
-    var tick = document.createElement("i");
-    tick.setAttribute("aria-hidden", "true");
-    d.appendChild(tick);
-    d.appendChild(document.createTextNode(String(i + 1).padStart(2, "0")));
-    rail.appendChild(d);
-    railItems.push(d);
-  });
-
-  var stnum = document.getElementById("stnum");
-  var stname = document.getElementById("stname");
-  var pct = document.getElementById("pct");
   var prog = document.getElementById("prog");
-  var activeIdx = -1;
 
   function updateReadout(){
-    var mid = window.pageYOffset + window.innerHeight * 0.4;
-    var idx = 0;
-    for (var i = 0; i < sections.length; i++){
-      var r = sections[i].getBoundingClientRect();
-      if (r.top + window.pageYOffset <= mid) idx = i;
-    }
-    if (idx !== activeIdx){
-      activeIdx = idx;
-      for (var j = 0; j < railItems.length; j++) railItems[j].classList.toggle("on", j === idx);
-      stnum.textContent = String(idx + 1).padStart(2, "0");
-      stname.textContent = sections[idx].getAttribute("data-station") || "";
-    }
     var max = document.documentElement.scrollHeight - window.innerHeight;
     var f = max > 0 ? clamp(window.pageYOffset / max, 0, 1) : 0;
-    pct.textContent = String(Math.round(f * 100)).padStart(3, "0");
     prog.style.transform = "scaleX(" + f.toFixed(4) + ")";
   }
 
@@ -2325,11 +2026,13 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     h.innerHTML = out;
     var ws = h.querySelectorAll(".w");
     for (var i = 0; i < ws.length; i++){
-      ws[i].style.transitionDelay = (140 + i * 46) + "ms";
+      ws[i].style.transitionDelay = Math.min(i * 22, 240) + "ms";
     }
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ h.classList.add("lit-in"); });
     });
+    // rAF is paused in background tabs; don't leave the headline hidden.
+    setTimeout(function(){ h.classList.add("lit-in"); }, 150);
     // The words settle into place after a delay that stretches if the tab was
     // backgrounded during load (rAF throttling). The thread breaks around the
     // hero title's final geometry, so rebuild once the last word finishes —
