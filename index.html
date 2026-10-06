@@ -69,8 +69,9 @@
   /* motion */
   --e-out:  cubic-bezier(0.22, 0.61, 0.36, 1);
   --e-mech: cubic-bezier(0.65, 0.02, 0.28, 1);
-  /* fast start, long settle: display type rising out of its mask */
-  --e-rise: cubic-bezier(0.16, 1, 0.3, 1);
+  /* quick start, long glide: display type rising out of its mask, copy
+     settling into place */
+  --e-rise: cubic-bezier(0.2, 0.8, 0.2, 1);
   --d-1: 240ms;
   --d-2: 520ms;
   --d-3: 900ms;
@@ -754,16 +755,20 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 /* ============================================================
    ENTRANCES
    One vocabulary, assigned by kind of element rather than by section:
-     rules draw across          (scaleX, mechanical ease)
-     mono labels wipe in        (clip-path, left to right, a plotter pass)
-     display type rises         (out of a mask, line by line)
-     body copy fades            (opacity only, nothing else moves it)
+     the sheet plots in         grid and thread sweep down on arrival
+     rules are drawn            an indigo pen stroke that cools to the rule
+     figures are plotted        swept in top to bottom, then drafted
+     mono labels wipe in        left to right, a plotter pass
+     display type rises         out of a mask, line by line
+     copy and cards settle      rise a short way into place as they appear
      result figures count up    (JS)
-   JS adds .in to each unit as it scrolls into view and sets --rd, the unit's
-   place among the units that arrived together, so a row of skills staggers
-   but a row scrolled to on its own starts at once. --k numbers siblings
-   inside a unit. Only opacity, transform and clip-path change, so nothing
-   reflows and the thread's text measurements hold.
+   Each entrance is a keyframe animation that waits paused on its first
+   frame until JS adds .in to its unit as the unit scrolls into view.
+   Animations rather than transitions leave the transition property free
+   for hover, so a row answers the pointer at once even straight after it
+   arrives. --rd is the unit's place among the units that arrived together,
+   --k numbers siblings inside a unit. Only opacity, transform and
+   clip-path move, so nothing reflows; the thread measures through them.
    ============================================================ */
 
 /* Rules that draw are pseudo-elements laid over the existing border, so the
@@ -771,7 +776,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
    because the hover states below light them up for every visitor. */
 .hero-meta, .results, .spec, .cred{ position:relative; }
 .hero-meta::before, .results::before,
-.spec::before, .cred::before, .tl-row::before{
+.spec::before, .cred::before, .tl-row::before,
+.sec + .sec::before, .case + .case::before{
   content:""; position:absolute; left:0; right:0; top:-1px; height:1px;
   background: var(--rule); transform-origin: left center;
   transition: background-color var(--d-1) var(--e-out);
@@ -781,149 +787,177 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   background: var(--rule); transform-origin: left center;
 }
 
-/* Hidden lists use :where() so they add no specificity: :is() would take
-   its most specific argument and outrank the .in rule meant to reveal it.
-   Every hidden starting state needs all three: .js (set in <head>, withdrawn
+/* Every hidden starting state needs all three: .js (set in <head>, withdrawn
    if the page script never runs), a screen, and no reduced-motion preference.
-   Anyone else, and print, gets the finished sheet. */
+   Anyone else, and print, gets the finished sheet.
+   Paused lists use :where() so they add no specificity: :is() would take its
+   most specific argument and outrank the rule that sets them running. */
 @media screen and (prefers-reduced-motion: no-preference){
 
-  /* ---- timing per heading context ---- */
-  #hero     { --ml-at: 100ms; --ml-step: 90ms; }
-  .sec-head { --ml-at:  80ms; --ml-step: 90ms; }
-  .case-top { --ml-at:  60ms; --ml-step: 80ms; }
-  @media (max-width: 720px){
-    #hero, .sec-head, .case-top{ --ml-step: 65ms; }
+  @keyframes sheet  { from{ clip-path: inset(0 0 100% 0); } to{ clip-path: inset(0 0 0 0); } }
+  @keyframes thread { from{ clip-path: inset(0 0 100% 0); } to{ clip-path: inset(0 0 calc(100% - 100vh) 0); } }
+  @keyframes plot   { from{ clip-path: inset(0 0 100% 0); } to{ clip-path: inset(0 0 0 0); } }
+  @keyframes wipe   { from{ clip-path: inset(0 100% 0 0); } to{ clip-path: inset(0 0 0 0); } }
+  @keyframes rise   { from{ transform: translateY(calc(100% + .35em)); } }
+  @keyframes settle { from{ opacity:0; transform: translateY(var(--travel, 22px)); } }
+  @keyframes fade   { from{ opacity:0; } }
+  @keyframes grow   { from{ transform: scaleX(0); } }
+  @keyframes bg-in  { from{ background-color: transparent; } }
+  /* The pen draws in indigo and cools to the rule's own colour once laid */
+  @keyframes pen{
+    from{ transform: scaleX(0); background-color: var(--indigo); }
+    55% { background-color: var(--indigo); }
+    to  { transform: scaleX(1); background-color: var(--pen-rest, var(--rule)); }
   }
+  @keyframes pen-a{
+    from{ clip-path: inset(0 100% 100% 0); border-color: var(--indigo); }
+    60% { border-color: var(--indigo); }
+    to  { clip-path: inset(0 0 0 0); border-color: var(--rule-2); }
+  }
+  @keyframes pen-b{
+    from{ clip-path: inset(100% 0 0 100%); border-color: var(--indigo); }
+    60% { border-color: var(--indigo); }
+    to  { clip-path: inset(0 0 0 0); border-color: var(--rule-2); }
+  }
+
+  /* ---- timing per heading context ---- */
+  #hero     { --ml-at: 150ms; --ml-step: 130ms; }
+  .sec-head { --ml-at: 120ms; --ml-step: 130ms; }
+  .case-top { --ml-at: 100ms; --ml-step: 110ms; }
+  @media (max-width: 720px){
+    #hero, .sec-head, .case-top{ --ml-step: 95ms; }
+  }
+
+  /* ---- the sheet: on arrival the grid plots in from the top, and at the
+     top of the page the thread draws down through the hero ---- */
+  .js .plane{ animation: sheet 1600ms var(--e-mech) backwards paused; }
+  .js.sheet-in .plane{ animation-play-state: running; }
+  .js:not(.sheet-in) #thread{ clip-path: inset(0 0 100% 0); }
+  .js.thread-intro #thread{ animation: thread 1800ms var(--e-mech) backwards; }
 
   /* ---- display type: masked line rise ---- */
   .js [data-ml]:not(.ml-ready){ opacity:0; }   /* until JS has banded it into lines */
-  .js .ml-in{ transform: translateY(calc(100% + .35em)); }
-  .js .in .ml-in{
-    transform:none;
-    transition: transform 1000ms var(--e-rise)
-      calc(var(--rd, 0ms) + var(--ml-at) + var(--i, 0) * var(--ml-step));
+  .js .ml-in{
+    animation: rise 1200ms var(--e-rise)
+      calc(var(--rd, 0ms) + var(--ml-at) + var(--i, 0) * var(--ml-step)) backwards paused;
   }
+  .js .in .ml-in{ animation-play-state: running; }
   /* The last word of the hero arrives on its own beat, after its line */
-  .js #heroTitle em{ display:inline-block; transform: translateY(calc(100% + .35em)); }
-  .js #hero.in #heroTitle em{
-    transform:none;
-    transition: transform 1000ms var(--e-rise)
-      calc(var(--ml-at) + var(--i, 0) * var(--ml-step) + 240ms);
+  .js #heroTitle em{
+    display:inline-block;
+    animation: rise 1200ms var(--e-rise)
+      calc(var(--ml-at) + var(--i, 0) * var(--ml-step) + 300ms) backwards paused;
   }
+  .js #hero.in #heroTitle em{ animation-play-state: running; }
+  /* rebanded after a resize: already seen, so no second entrance */
+  .js .ml-done :is(.ml-in, em), .js #heroTitle.ml-done em{ animation: none; }
 
   /* ---- mono labels: plotter wipe ----
      The boxes shrink to their text so the wipe spends its time on letters */
   .js :is(.sec-tag, .case-id, .tl-when){ justify-self:start; }
   .js :is(.ctx, .cap h4, .cred-block > h4){ width: fit-content; }
-  .hero-eyebrow > span   { --wd: 160ms; }
-  .ctx                   { --wd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 120ms); }
-  .tl-when               { --wd:  80ms; }
-  .cred .g               { --wd: 220ms; }
+  .hero-eyebrow > span{ --wd: 220ms; }
+  .sec-tag            { --wd: 150ms; }
+  .ctx                { --wd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 120ms); }
+  .tl-when            { --wd: 120ms; }
+  .cred .g            { --wd: 300ms; }
   .js :where(.hero-eyebrow > span, .sec-tag, .case-id, .ctx, .tl-when, .cap h4, .cred-block > h4, .cred .g){
-    clip-path: inset(0 100% 0 0);
+    animation: wipe 900ms var(--e-mech) calc(var(--rd, 0ms) + var(--wd, 0ms)) backwards paused;
   }
   .js .in :is(.hero-eyebrow > span, .sec-tag, .case-id, .ctx, .tl-when, .cap h4, .cred .g),
-  .js .cred-block > h4.in{
-    clip-path: inset(0);
-    transition: clip-path 800ms var(--e-mech) calc(var(--rd, 0ms) + var(--wd, 0ms));
-  }
+  .js .cred-block > h4.in{ animation-play-state: running; }
 
-  /* ---- body copy and cells: fade ---- */
-  .hero-lede             { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 260ms); }
-  .hero-meta > div       { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 440ms + var(--k, 0) * 90ms); }
-  .sec-head .sub         { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 160ms); }
-  .case-top .body        { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 220ms); }
-  .case-top .body + .body{ --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 340ms); }
-  .spec > *              { --fd: 120ms; }
-  .spec > .flag          { --fd: 260ms; }
-  .results > div         { --fd: calc(150ms + var(--k, 0) * 80ms); }
-  .tl-what               { --fd: 140ms; }
-  .tl-span small         { --fd: 520ms; }
-  .cap li                { --fd: calc(260ms + var(--k, 0) * 35ms); }
-  .cred > div:first-child{ --fd: 100ms; }
-  .tb-cell               { --fd: calc(280ms + var(--k, 0) * 70ms); }
-  .sheet-foot > *        { --fd: calc(var(--k, 0) * 70ms); }
+  /* ---- copy and cards: settle into place ---- */
+  .hero-lede             { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 300ms); --travel: 26px; }
+  .hero-meta > div       { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 440ms + var(--k, 0) * 110ms); }
+  .sec-head .sub         { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 180ms); }
+  .case-top .body        { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 240ms); }
+  .case-top .body + .body{ --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 380ms); }
+  .spec > *              { --fd: 160ms; --travel: 16px; }
+  .spec > .flag          { --fd: 320ms; }
+  .results > div         { --fd: calc(200ms + var(--k, 0) * 110ms); --travel: 16px; }
+  .tl-what               { --fd: 180ms; --travel: 18px; }
+  .tl-span small         { --fd: 700ms; --travel: 8px; }
+  .cap li                { --fd: calc(340ms + var(--k, 0) * 50ms); --travel: 10px; }
+  .cred > div:first-child{ --fd: 120ms; --travel: 12px; }
+  .offsys                { --travel: 12px; }
+  .tb-cell               { --fd: calc(360ms + var(--k, 0) * 90ms); --travel: 12px; }
+  .sheet-foot > *        { --fd: calc(var(--k, 0) * 80ms); --travel: 8px; }
   .js :where(.hero-lede, .hero-meta > div, .sec-head .sub, .case-top .body, .spec > *, .results > div,
              .tl-what, .tl-span small, .cap li, .cred > div:first-child, .offsys, .tb-cell, .sheet-foot > *){
-    opacity:0;
+    animation: settle 1000ms var(--e-rise) calc(var(--rd, 0ms) + var(--fd, 0ms)) backwards paused;
   }
   .js .in :is(.hero-lede, .hero-meta > div, .sec-head .sub, .case-top .body, .results > div,
               .tl-what, .tl-span small, .cap li, .cred > div:first-child, .tb-cell, .sheet-foot > *),
   /* spec rows sit inside a case header, which is a unit of its own, so they
      must answer only to their own .in */
   .js .spec.in > *,
-  .js .offsys.in{
-    opacity:1;
-    transition: opacity 700ms var(--e-out) calc(var(--rd, 0ms) + var(--fd, 0ms));
-  }
+  .js .offsys.in{ animation-play-state: running; }
 
-  /* ---- rules: draw across ---- */
-  .js :is(.hero-meta, .results, .spec, .cred, .tl-row){ border-top-color: transparent; }
+  /* ---- rules: the pen ---- */
+  .js :is(.hero-meta, .results, .spec, .cred, .tl-row, .sec + .sec, .case + .case){ border-top-color: transparent; }
   .js :is(.spec, .cred, .tl-row):last-child{ border-bottom-color: transparent; }
-  .js :is(.hero-meta, .results, .spec, .cred, .tl-row)::before,
-  .js :is(.spec, .cred, .tl-row):last-child::after{ transform: scaleX(0); }
-  .js :is(.results, .spec, .cred, .tl-row).in::before{
-    transform:none;
-    transition: transform 900ms var(--e-mech) var(--rd, 0ms),
-                background-color var(--d-1) var(--e-out);
+  .js :where(.results, .spec, .cred, .tl-row)::before{
+    animation: pen 1400ms var(--e-mech) var(--rd, 0ms) backwards paused;
   }
-  .js :is(.spec, .cred, .tl-row).in:last-child::after{
-    transform:none;
-    transition: transform 900ms var(--e-mech) calc(var(--rd, 0ms) + 200ms);
+  .js :where(.spec, .cred, .tl-row):last-child::after{
+    animation: pen 1400ms var(--e-mech) calc(var(--rd, 0ms) + 240ms) backwards paused;
   }
-  .js #hero.in .hero-meta::before{
-    transform:none;
-    transition: transform 1000ms var(--e-mech) calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 360ms);
-  }
-  .js .hero-eyebrow s{ transform: scaleX(0); transform-origin: left center; }
-  .js #hero.in .hero-eyebrow s{ transform:none; transition: transform 700ms var(--e-mech); }
+  .js :is(.results, .spec, .cred, .tl-row).in::before,
+  .js :is(.spec, .cred, .tl-row).in:last-child::after{ animation-play-state: running; }
 
-  .js .cap .u{ transform: scaleX(0); }
-  .js .cap.in .u{
-    transform:none;
-    transition: transform 1100ms var(--e-mech) calc(var(--rd, 0ms) + 100ms),
-                background-color var(--d-1) var(--e-out);
+  /* section and case dividers run the full width when their heading arrives */
+  .js :where(.sec + .sec, .case + .case)::before{
+    animation: pen 1800ms var(--e-mech) var(--rd, 0ms) backwards paused;
   }
+  .js :is(.sec, .case).head-in::before{ animation-play-state: running; }
+
+  .js .hero-meta::before{
+    animation: pen 1400ms var(--e-mech)
+      calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 360ms) backwards paused;
+  }
+  .js .hero-eyebrow s{
+    --pen-rest: var(--rule-2); transform-origin: left center;
+    animation: pen 1000ms var(--e-mech) backwards paused;
+  }
+  .js .cap .u{
+    --pen-rest: var(--rule-2);
+    animation: pen 1300ms var(--e-mech) calc(var(--rd, 0ms) + 120ms) backwards paused;
+  }
+  .js #hero.in .hero-meta::before, .js #hero.in .hero-eyebrow s,
+  .js .cap.in .u{ animation-play-state: running; }
+
   /* duration bars start once their row has landed */
-  .js .tl-row .bar-fill{ transform: scaleX(0); }
-  .js .tl-row.in .bar-fill{
-    transform: scaleX(var(--w, .5));
-    transition: transform 1400ms var(--e-mech) calc(var(--rd, 0ms) + 380ms);
+  .js .tl-row .bar-fill{ animation: grow 1500ms var(--e-mech) calc(var(--rd, 0ms) + 500ms) backwards paused; }
+  .js .tl-row.in .bar-fill{ animation-play-state: running; }
+
+  /* ---- figures: the frame is swept in top to bottom, then the diagram is
+     drafted inside it (marks start once the sweep is under way) ---- */
+  .js .figure{ animation: plot 1100ms var(--e-mech) backwards paused; }
+  .js .figure.on{ animation-play-state: running; }
+  .js svg.dg .dw{ stroke-dasharray: var(--len, 400px); stroke-dashoffset: var(--len, 400px); }
+  .js .figure.on svg.dg .dw{
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--dur, 900ms) var(--e-mech) calc(var(--dl, 0ms) + 550ms);
   }
+  .js svg.dg :is(.fd, .fd-sg){ opacity:0; }
+  .js .figure.on svg.dg :is(.fd, .fd-sg){ opacity:1; transition: opacity 620ms var(--e-out) calc(var(--dl, 0ms) + 550ms); }
 
   /* ---- title block: the frame is ruled from two opposite corners, then the
      cells fill in reading order and the scale bar ticks across ---- */
-  .js .tblock{ border-color: transparent; background-color: transparent; }
-  .js .tblock.in{
-    background-color: var(--paper-raised);
-    transition: background-color 900ms var(--e-out) calc(var(--rd, 0ms) + 200ms);
-  }
+  .js .tblock{ border-color: transparent; animation: bg-in 1000ms var(--e-out) calc(var(--rd, 0ms) + 250ms) backwards paused; }
   .js .tblock::before, .js .tblock::after{
     content:""; position:absolute; inset:-1px; pointer-events:none;
     border: 0 solid var(--rule-2);
   }
-  .js .tblock::before{ border-width: 1px 0 0 1px; clip-path: inset(0 100% 100% 0); }
-  .js .tblock::after { border-width: 0 1px 1px 0; clip-path: inset(100% 0 0 100%); }
-  .js .tblock.in::before, .js .tblock.in::after{
-    clip-path: inset(0);
-    transition: clip-path 1100ms var(--e-mech) var(--rd, 0ms);
+  .js .tblock::before{ border-width: 1px 0 0 1px; animation: pen-a 1400ms var(--e-mech) var(--rd, 0ms) backwards paused; }
+  .js .tblock::after { border-width: 0 1px 1px 0; animation: pen-b 1400ms var(--e-mech) calc(var(--rd, 0ms) + 250ms) backwards paused; }
+  .js .scalebar i{
+    transform-origin: left center;
+    animation: grow 600ms var(--e-mech) calc(var(--rd, 0ms) + 320ms + var(--k, 0) * 110ms) backwards paused;
   }
-  .js .tblock.in::after{ transition-delay: calc(var(--rd, 0ms) + 220ms); }
-  .js .scalebar i{ transform: scaleX(0); transform-origin: left center; }
-  .js .sheet-foot.in .scalebar i{
-    transform:none;
-    transition: transform 500ms var(--e-mech) calc(var(--rd, 0ms) + 260ms + var(--k, 0) * 90ms);
-  }
-
-  /* ---- diagrams: drafted line by line (timing per mark is set by JS) ---- */
-  .js svg.dg .dw{ stroke-dasharray: var(--len, 400px); stroke-dashoffset: var(--len, 400px); }
-  .js .figure.on svg.dg .dw{
-    stroke-dashoffset: 0;
-    transition: stroke-dashoffset var(--dur, 900ms) var(--e-mech) var(--dl, 0ms);
-  }
-  .js svg.dg :is(.fd, .fd-sg){ opacity:0; }
-  .js .figure.on svg.dg :is(.fd, .fd-sg){ opacity:1; transition: opacity 620ms var(--e-out) var(--dl, 0ms); }
+  .js .tblock.in, .js .tblock.in::before, .js .tblock.in::after,
+  .js .sheet-foot.in .scalebar i{ animation-play-state: running; }
 
   /* theme switch: a short cross-fade instead of a hard cut (JS opts in) */
   ::view-transition-old(root), ::view-transition-new(root){
@@ -947,15 +981,20 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   transition: transform var(--d-2) var(--e-rise);
 }
 .case:focus-within .case-id b::after{ transform: scaleX(1); }
-.spec:focus-within::before{ background: var(--indigo-2); }
+/* rows step a few pixels right under the pointer while their rule lights */
+.spec > *, .cred > *, .tl-row > *{ transition: transform 420ms var(--e-rise); }
+.cap h4{ transition: color var(--d-1) var(--e-out); }
+.spec:focus-within::before{ background: var(--indigo); }
+.spec:focus-within > *{ transform: translateX(6px); }
 @media (hover: hover){
   .case:hover .case-id b::after{ transform: scaleX(1); }
   /* Anywhere in a case its figure's corner marks register; on the figure
      itself they turn indigo (FIGURE above). */
   .case:hover .figure::before, .case:hover .figure::after{ opacity:1; }
-  /* rows: the rule above the row lights */
-  .spec:hover::before, .cred:hover::before, .tl-row:hover::before{ background: var(--indigo-2); }
-  .cap:hover .u{ background: var(--indigo-2); }
+  .spec:hover::before, .cred:hover::before, .tl-row:hover::before{ background: var(--indigo); }
+  .spec:hover > *, .cred:hover > *, .tl-row:hover > *{ transform: translateX(6px); }
+  .cap:hover .u{ background: var(--indigo); }
+  .cap:hover h4{ color: var(--ink); }
 }
 
 /* ============================================================
@@ -1845,19 +1884,17 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      drop that stretch, so the line interrupts and resumes — the way a drafted
      leader line breaks around annotation rather than running through it. */
 
-  // A heading still waiting for its entrance sits translated below its mask, and
-  // one mid-entrance is partway up. The thread must break where the text will
-  // finally rest, so add back however far the mask transforms have it lifted.
+  // Text still waiting for its entrance sits translated below where it will
+  // rest (a heading under its mask, copy a short way down), and text
+  // mid-entrance is partway there. The thread must break where the text will
+  // finally rest, so take off however far entrance transforms have it moved.
+  // Nothing in the finished sheet is translated, so every offset counts.
   function liftOf(el, cache){
-    var inner = el.closest(".ml-in");
-    if (!inner) return 0;
+    if (!el || el.tagName === "MAIN") return 0;
     if (cache.has(el)) return cache.get(el);
-    var dy = 0;
-    for (var n = el; n; n = n.parentElement){
-      var t = getComputedStyle(n).transform;
-      if (t && t !== "none") dy += new DOMMatrixReadOnly(t).m42;
-      if (n === inner) break;
-    }
+    var t = getComputedStyle(el).transform;
+    var dy = (t && t !== "none") ? new DOMMatrixReadOnly(t).m42 : 0;
+    dy += liftOf(el.parentElement, cache);
     cache.set(el, dy);
     return dy;
   }
@@ -2122,7 +2159,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         io.unobserve(e.target);
       }
     });
-  }, { rootMargin: "0px 0px -12% 0px", threshold: 0.06 });
+  }, { rootMargin: "0px 0px -15% 0px", threshold: 0.06 });
 
   document.querySelectorAll(".sec, .figure").forEach(function(el){
     io.observe(el);
@@ -2130,8 +2167,9 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 
   var UNITS = "#hero, .sec-head, .case-top, .spec, .results, .tl-row, .cap, " +
               ".cred-block > h4, .cred, .offsys, .tblock, .sheet-foot";
-  var STAGGER_MS  = window.matchMedia("(max-width: 720px)").matches ? 60 : 90;
+  var STAGGER_MS  = window.matchMedia("(max-width: 720px)").matches ? 90 : 140;
   var STAGGER_MAX = 5;   // a long batch tops out rather than keeping the last rows waiting
+  var root = document.documentElement;
 
   var rio = new IntersectionObserver(function(entries){
     var batch = [];
@@ -2143,13 +2181,27 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     batch.sort(function(a, b){
       return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
     });
+    if (batch.length && !root.classList.contains("sheet-in")){
+      // The first arrival lays the sheet: the grid plots in, and if the
+      // reader is at the top, the thread draws down through the hero.
+      if (window.pageYOffset < 40) root.classList.add("thread-intro");
+      root.classList.add("sheet-in");
+    }
     batch.forEach(function(el, k){
       var rd = Math.min(k, STAGGER_MAX) * STAGGER_MS;
       el.style.setProperty("--rd", rd + "ms");
       el.classList.add("in");
+      // A heading's arrival also draws the divider at the top of its section
+      // or case. (Not .in: that would start every heading inside it.)
+      var host = el.classList.contains("sec-head") ? el.closest(".sec")
+               : el.classList.contains("case-top") ? el.closest(".case") : null;
+      if (host){
+        host.style.setProperty("--rd", rd + "ms");
+        host.classList.add("head-in");
+      }
       if (el.classList.contains("results")) countUp(el, rd);
     });
-  }, { rootMargin: "0px 0px -8% 0px", threshold: 0 });
+  }, { rootMargin: "0px 0px -15% 0px", threshold: 0 });
 
   document.querySelectorAll(UNITS).forEach(function(el){ rio.observe(el); });
 
@@ -2173,7 +2225,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      so the unit beside it never shifts, and the original text
      is put back exactly at the end.
      ========================================================== */
-  var COUNT_MS = 1000;
+  var COUNT_MS = 1400;
   var COUNT_RE = /^([−-]?)(\d+(?:\.(\d+))?)$/;
 
   function countUp(dl, rd){
@@ -2188,7 +2240,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       num.style.display = "inline-block";
       num.textContent = sign + (0).toFixed(places);
 
-      // Matches the cell's own fade: 150ms in, 80ms per cell (ENTRANCES)
+      // Matches the cell's own entrance: 200ms in, 110ms per cell (ENTRANCES)
       setTimeout(function(){
         var start = null;
         requestAnimationFrame(function step(now){
@@ -2204,7 +2256,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
             num.style.display = "";
           }
         });
-      }, rd + 150 + k * 80);
+      }, rd + 200 + k * 110);
     });
   }
 
@@ -2319,6 +2371,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   function mlSplit(){
     mlTargets.forEach(function(el){
       if (!el.mlWords) el.mlWords = mlWords(el);
+      // Rebanded after its entrance: the new lines must not rise again
+      if (el.closest(".in")) el.classList.add("ml-done");
       mlRender(el, mlBand(el, el.mlWords));
       el.classList.add("ml-ready");
     });
@@ -2935,12 +2989,18 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   /* ============================================================
      LOOP
      ============================================================ */
+  // The loop runs only while the stage is on screen, so the build plays when
+  // the reader arrives rather than at page load, out of sight, and a cell
+  // scrolled past costs nothing.
+  const BUILD_S = 2;
   let last = performance.now();
+  let inView = false, running = false, seen = false;
   function frame(now){
+    if (!inView){ running = false; return; }
     const dt = Math.min(64, now - last) / 1000;
     last = now;
 
-    if (build < 1) build = Math.min(1, build + dt / 1.5);
+    if (build < 1) build = Math.min(1, build + dt / BUILD_S);
     if (stepF !== stepTarget){
       const d = Math.sign(stepTarget - stepF) * dt / 0.75;
       stepF = Math.abs(stepTarget - stepF) <= Math.abs(d) ? stepTarget : stepF + d;
@@ -2990,6 +3050,12 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     draw();
     requestAnimationFrame(frame);
   }
+  function start(){
+    if (running) return;
+    running = true;
+    last = performance.now();
+    requestAnimationFrame(frame);
+  }
   if (!reduce && cv.getContext) {
     document.getElementById('cellWrap').hidden = false;
     var flat = document.getElementById('cellFlat');
@@ -2997,7 +3063,13 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     // implement it, so assigning it silently does nothing. Set the attribute.
     if (flat) flat.setAttribute('hidden', '');
     resize();
-    requestAnimationFrame(frame);
+    new IntersectionObserver(entries => {
+      inView = entries[0].isIntersecting;
+      if (!inView) return;
+      // the drag hint stays up for a while after the reader first gets here
+      if (!seen){ seen = true; setTimeout(() => hint.classList.add('gone'), 9000); }
+      start();
+    }, { rootMargin: '0px 0px -15% 0px' }).observe(stage);
   }
 
   /* ============================================================
@@ -3057,7 +3129,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   new MutationObserver(palette).observe(document.documentElement,
     { attributes:true, attributeFilter:['data-theme'] });
 
-  setTimeout(() => hint.classList.add('gone'), 9000);
 })();
 
 })();
