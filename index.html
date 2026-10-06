@@ -69,6 +69,8 @@
   /* motion */
   --e-out:  cubic-bezier(0.22, 0.61, 0.36, 1);
   --e-mech: cubic-bezier(0.65, 0.02, 0.28, 1);
+  /* fast start, long settle: display type rising out of its mask */
+  --e-rise: cubic-bezier(0.16, 1, 0.3, 1);
   --d-1: 240ms;
   --d-2: 520ms;
   --d-3: 900ms;
@@ -250,9 +252,25 @@ a{ color: inherit; }
 .bar-links a{
   color: var(--slate); text-decoration:none; white-space:nowrap;
   border-bottom:1px solid transparent; padding-bottom:1px;
-  transition: color var(--d-1) var(--e-out), border-color var(--d-1) var(--e-out);
+  position:relative;
+  transition: color var(--d-1) var(--e-out);
 }
-.bar-links a:hover{ color: var(--ink); border-bottom-color: var(--indigo); }
+/* The underline draws in from the left and retracts to the right, sitting over
+   the transparent border so it costs no layout. aria-current is set by the
+   scroll spy, so the section being read keeps its link underlined. */
+.bar-links a::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background: var(--indigo);
+  transform: scaleX(0); transform-origin: right center;
+  transition: transform var(--d-2) var(--e-rise);
+}
+.bar-links a[aria-current="true"]{ color: var(--ink); }
+.bar-links a[aria-current="true"]::after,
+.bar-links a:focus-visible::after{ transform: scaleX(1); transform-origin: left center; }
+@media (hover: hover){
+  .bar-links a:hover{ color: var(--ink); }
+  .bar-links a:hover::after{ transform: scaleX(1); transform-origin: left center; }
+}
 
 .bar-prog{
   position:absolute; left:0; bottom:-1px; height:1px; width:100%;
@@ -321,20 +339,16 @@ main{ position:relative; z-index:2; }
 /* ============================================================
    REVEAL PRIMITIVES
    ============================================================ */
-.rv{ opacity:0; transform: translateY(14px); transition: opacity var(--d-3) var(--e-out), transform var(--d-3) var(--e-out); }
-.on .rv, .rv.on{ opacity:1; transform:none; }
-
-/* Masked line reveal. JS bands the words into the lines they actually wrap
-   onto and wraps each in .ml-line; the mask is the overflow clip, and each
-   line rides its own delay off --i. Rides the section's .on like .rv does. */
-.ml-line{ display:block; overflow:hidden; }
-.ml-in{
-  display:block;
-  transform: translateY(105%);
-  transition: transform var(--d-3) var(--e-out);
-  transition-delay: calc(var(--i) * 90ms);
-}
-.on .ml-in{ transform:none; }
+/* Masked line reveal. JS bands the words of each [data-ml] heading into the
+   lines they actually wrap onto and wraps each in .ml-line; the mask is the
+   overflow clip, and each line rises on its own delay off --i. The bottom
+   padding widens the clip past the tight hero line-height so descenders are
+   not cut, and the matching negative margin keeps the line spacing unchanged.
+   Bottom only: a negative margin on both sides of a gap would collapse to
+   one, and every gap would open by the difference. The hidden and revealed
+   states live under ENTRANCES below. */
+.ml-line{ display:block; overflow:hidden; padding-bottom: .18em; margin-bottom: -.18em; }
+.ml-in{ display:block; }
 
 /* Per-letter ripple on the title-block links. Rise only, staggered off --i,
    so it needs no variable font and works on the system stack. */
@@ -346,9 +360,6 @@ main{ position:relative; z-index:2; }
 }
 a:hover > .lr > span,
 a:focus-visible > .lr > span{ transform: translateY(-3px); }
-
-.rule-draw{ height:1px; background: var(--rule-2); transform: scaleX(0); transform-origin: left; transition: transform var(--d-4) var(--e-mech); }
-.on .rule-draw{ transform: scaleX(1); }
 
 /* ============================================================
    HERO
@@ -391,10 +402,6 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 .hero-meta dt{ color: var(--slate); margin-bottom:.42rem; }
 .hero-meta dd{ margin:0; font-size:.95rem; color: var(--ink); letter-spacing:-0.01em; }
 
-/* word-by-word hero set */
-.w{ display:inline-block; opacity:0; transform: translateY(0.32em); }
-.lit-in .w{ opacity:1; transform:none; transition: opacity 420ms var(--e-out), transform 420ms var(--e-out); }
-
 /* ============================================================
    TIMELINE (experience) — process rail with duration bars
    ============================================================ */
@@ -421,10 +428,8 @@ h1.hero-title em{ font-style: normal; color: var(--slate); }
 .tl-span .bar-track{ height:2px; background: var(--rule); position:relative; }
 .tl-span .bar-fill{
   position:absolute; inset:0; height:2px; background: var(--ink); opacity:.65;
-  transform: scaleX(0); transform-origin: left center;
-  transition: transform 1400ms var(--e-mech) var(--dl, 0ms);
+  transform: scaleX(var(--w, .5)); transform-origin: left center;
 }
-.on .tl-span .bar-fill{ transform: scaleX(var(--w, .5)); }
 .tl-span small{ display:block; margin-top:.5rem; color: var(--slate); font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.1em; }
 @media (max-width:860px){
   .tl-row{ grid-template-columns: 1fr; gap:.6rem; }
@@ -517,13 +522,13 @@ svg.dg .fillin{ fill: var(--indigo); stroke:none; }
 svg.dg .fillink{ fill: var(--ink); stroke:none; opacity:.55; }
 svg.dg .fillsl{ fill: var(--slate-2); stroke:none; opacity:.5; }
 
-/* line-by-line drafting reveal */
-svg.dg .dw{ stroke-dashoffset: var(--len, 400px); stroke-dasharray: var(--len, 400px); }
-.on svg.dg .dw{ stroke-dashoffset: 0; transition: stroke-dashoffset var(--dur, 900ms) var(--e-mech) var(--dl, 0ms); }
-svg.dg .fd{ opacity:0; }
-.on svg.dg .fd{ opacity:1; transition: opacity 620ms var(--e-out) var(--dl, 0ms); }
-svg.dg .fd-sg{ opacity:0; }
-.on svg.dg .fd-sg{ opacity:1; transition: opacity 620ms var(--e-out) var(--dl, 0ms); }
+/* Line-by-line drafting reveal. The undrawn state lives under ENTRANCES so a
+   diagram is always fully drawn without JS, in print and with reduced motion.
+   Keyed to the figure's own .on, not any ancestor's: the section is .on long
+   before its later figures are on screen, and they used to draw out of sight.
+   A drafted mark ends fully opaque, over any fill's own opacity: that is how
+   the diagrams have always looked once drawn, so every path matches it. */
+svg.dg :is(.fd, .fd-sg){ opacity:1; }
 
 /* travelling data pulse along a diagram path */
 svg.dg .flow{
@@ -531,7 +536,7 @@ svg.dg .flow{
   stroke-dasharray: 3 var(--len, 400px);
   opacity: 0;
 }
-.on svg.dg .flow{
+.figure.on svg.dg .flow{
   opacity:.85;
   animation: travel var(--sp, 4.2s) linear infinite var(--dl, 0ms);
 }
@@ -592,8 +597,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 .cap{ padding: 1.4rem 1.4rem 1.6rem 0; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); }
 .cap:nth-child(2n){ padding-left:1.4rem; }
 .cap h4{ color: var(--slate); font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em; text-transform:uppercase; font-weight:400; }
-.cap .u{ height:1px; background: var(--rule-2); margin:.75rem 0 .95rem; transform:scaleX(0); transform-origin:left; transition: transform 1100ms var(--e-mech) var(--dl,0ms); }
-.on .cap .u{ transform: scaleX(1); }
+.cap .u{ height:1px; background: var(--rule-2); margin:.75rem 0 .95rem; transform-origin:left; transition: background-color var(--d-1) var(--e-out); }
 .cap ul{ display:flex; flex-wrap:wrap; gap:.34rem .5rem; }
 .cap li{ font-size:.885rem; color: var(--ink-2); line-height:1.35; }
 .cap li::after{ content:"·"; color: var(--rule-2); margin-left:.5rem; }
@@ -673,9 +677,11 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   color: var(--slate); font-family:var(--mono); font-size:var(--t-mono);
   letter-spacing:.11em; text-transform:uppercase;
   padding:.32rem .6rem; cursor:pointer;
-  transition: color var(--d-1) var(--e-out), border-color var(--d-1) var(--e-out);
+  transition: color var(--d-1) var(--e-out), border-color var(--d-1) var(--e-out), transform 120ms var(--e-out);
 }
 .tgl:hover{ color: var(--ink); border-color: var(--indigo); }
+/* a one-pixel press, so a click registers before the theme swaps */
+.tgl:active{ transform: translateY(1px); }
 
 /* note callout */
 .note{
@@ -684,10 +690,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   background: var(--paper-sunk);
   color: var(--ink-2); font-size:.9rem; line-height:1.5;
 }
-
-/* ============================================================
-   REDUCED MOTION — everything resolves to its final state
-   ============================================================ */
 
 /* ============================================================
    FIG 4.1 - INTERACTIVE CELL
@@ -738,14 +740,229 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   border:0; cursor:pointer; transition:color 200ms var(--e-out), background 200ms var(--e-out); }
 .cell-seg button + button{ border-left:1px solid var(--rule-2); }
 .cell-seg button:hover{ color:var(--ink-2); }
+/* Segments share borders, so a press tints rather than moves */
+.cell-seg button:not([aria-pressed="true"]):active{ background: color-mix(in srgb, var(--ink) 9%, transparent); }
 .cell-seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); }
 .cell-ghost{ font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em;
   text-transform:uppercase; padding:.52rem .8rem; background:transparent; color:var(--slate);
   border:1px solid var(--rule-2); cursor:pointer;
-  transition:color 200ms var(--e-out), border-color 200ms var(--e-out); }
+  transition:color 200ms var(--e-out), border-color 200ms var(--e-out), transform 120ms var(--e-out); }
 .cell-ghost:hover{ color:var(--ink); border-color:var(--slate-2); }
+.cell-ghost:active{ transform: translateY(1px); }
 .cell-mode{ margin-top:.75rem; color:var(--slate); }
 
+/* ============================================================
+   ENTRANCES
+   One vocabulary, assigned by kind of element rather than by section:
+     rules draw across          (scaleX, mechanical ease)
+     mono labels wipe in        (clip-path, left to right, a plotter pass)
+     display type rises         (out of a mask, line by line)
+     body copy fades            (opacity only, nothing else moves it)
+     result figures count up    (JS)
+   JS adds .in to each unit as it scrolls into view and sets --rd, the unit's
+   place among the units that arrived together, so a row of skills staggers
+   but a row scrolled to on its own starts at once. --k numbers siblings
+   inside a unit. Only opacity, transform and clip-path change, so nothing
+   reflows and the thread's text measurements hold.
+   ============================================================ */
+
+/* Rules that draw are pseudo-elements laid over the existing border, so the
+   layout is identical with or without them. They are global, not gated,
+   because the hover states below light them up for every visitor. */
+.hero-meta, .results, .spec, .cred{ position:relative; }
+.hero-meta::before, .results::before,
+.spec::before, .cred::before, .tl-row::before{
+  content:""; position:absolute; left:0; right:0; top:-1px; height:1px;
+  background: var(--rule); transform-origin: left center;
+  transition: background-color var(--d-1) var(--e-out);
+}
+.spec:last-child::after, .cred:last-child::after, .tl-row:last-child::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background: var(--rule); transform-origin: left center;
+}
+
+/* Hidden lists use :where() so they add no specificity: :is() would take
+   its most specific argument and outrank the .in rule meant to reveal it.
+   Every hidden starting state needs all three: .js (set in <head>, withdrawn
+   if the page script never runs), a screen, and no reduced-motion preference.
+   Anyone else, and print, gets the finished sheet. */
+@media screen and (prefers-reduced-motion: no-preference){
+
+  /* ---- timing per heading context ---- */
+  #hero     { --ml-at: 100ms; --ml-step: 90ms; }
+  .sec-head { --ml-at:  80ms; --ml-step: 90ms; }
+  .case-top { --ml-at:  60ms; --ml-step: 80ms; }
+  @media (max-width: 720px){
+    #hero, .sec-head, .case-top{ --ml-step: 65ms; }
+  }
+
+  /* ---- display type: masked line rise ---- */
+  .js [data-ml]:not(.ml-ready){ opacity:0; }   /* until JS has banded it into lines */
+  .js .ml-in{ transform: translateY(calc(100% + .35em)); }
+  .js .in .ml-in{
+    transform:none;
+    transition: transform 1000ms var(--e-rise)
+      calc(var(--rd, 0ms) + var(--ml-at) + var(--i, 0) * var(--ml-step));
+  }
+  /* The last word of the hero arrives on its own beat, after its line */
+  .js #heroTitle em{ display:inline-block; transform: translateY(calc(100% + .35em)); }
+  .js #hero.in #heroTitle em{
+    transform:none;
+    transition: transform 1000ms var(--e-rise)
+      calc(var(--ml-at) + var(--i, 0) * var(--ml-step) + 240ms);
+  }
+
+  /* ---- mono labels: plotter wipe ----
+     The boxes shrink to their text so the wipe spends its time on letters */
+  .js :is(.sec-tag, .case-id, .tl-when){ justify-self:start; }
+  .js :is(.ctx, .cap h4, .cred-block > h4){ width: fit-content; }
+  .hero-eyebrow > span   { --wd: 160ms; }
+  .ctx                   { --wd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 120ms); }
+  .tl-when               { --wd:  80ms; }
+  .cred .g               { --wd: 220ms; }
+  .js :where(.hero-eyebrow > span, .sec-tag, .case-id, .ctx, .tl-when, .cap h4, .cred-block > h4, .cred .g){
+    clip-path: inset(0 100% 0 0);
+  }
+  .js .in :is(.hero-eyebrow > span, .sec-tag, .case-id, .ctx, .tl-when, .cap h4, .cred .g),
+  .js .cred-block > h4.in{
+    clip-path: inset(0);
+    transition: clip-path 800ms var(--e-mech) calc(var(--rd, 0ms) + var(--wd, 0ms));
+  }
+
+  /* ---- body copy and cells: fade ---- */
+  .hero-lede             { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 260ms); }
+  .hero-meta > div       { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 440ms + var(--k, 0) * 90ms); }
+  .sec-head .sub         { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 160ms); }
+  .case-top .body        { --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 220ms); }
+  .case-top .body + .body{ --fd: calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 340ms); }
+  .spec > *              { --fd: 120ms; }
+  .spec > .flag          { --fd: 260ms; }
+  .results > div         { --fd: calc(150ms + var(--k, 0) * 80ms); }
+  .tl-what               { --fd: 140ms; }
+  .tl-span small         { --fd: 520ms; }
+  .cap li                { --fd: calc(260ms + var(--k, 0) * 35ms); }
+  .cred > div:first-child{ --fd: 100ms; }
+  .tb-cell               { --fd: calc(280ms + var(--k, 0) * 70ms); }
+  .sheet-foot > *        { --fd: calc(var(--k, 0) * 70ms); }
+  .js :where(.hero-lede, .hero-meta > div, .sec-head .sub, .case-top .body, .spec > *, .results > div,
+             .tl-what, .tl-span small, .cap li, .cred > div:first-child, .offsys, .tb-cell, .sheet-foot > *){
+    opacity:0;
+  }
+  .js .in :is(.hero-lede, .hero-meta > div, .sec-head .sub, .case-top .body, .results > div,
+              .tl-what, .tl-span small, .cap li, .cred > div:first-child, .tb-cell, .sheet-foot > *),
+  /* spec rows sit inside a case header, which is a unit of its own, so they
+     must answer only to their own .in */
+  .js .spec.in > *,
+  .js .offsys.in{
+    opacity:1;
+    transition: opacity 700ms var(--e-out) calc(var(--rd, 0ms) + var(--fd, 0ms));
+  }
+
+  /* ---- rules: draw across ---- */
+  .js :is(.hero-meta, .results, .spec, .cred, .tl-row){ border-top-color: transparent; }
+  .js :is(.spec, .cred, .tl-row):last-child{ border-bottom-color: transparent; }
+  .js :is(.hero-meta, .results, .spec, .cred, .tl-row)::before,
+  .js :is(.spec, .cred, .tl-row):last-child::after{ transform: scaleX(0); }
+  .js :is(.results, .spec, .cred, .tl-row).in::before{
+    transform:none;
+    transition: transform 900ms var(--e-mech) var(--rd, 0ms),
+                background-color var(--d-1) var(--e-out);
+  }
+  .js :is(.spec, .cred, .tl-row).in:last-child::after{
+    transform:none;
+    transition: transform 900ms var(--e-mech) calc(var(--rd, 0ms) + 200ms);
+  }
+  .js #hero.in .hero-meta::before{
+    transform:none;
+    transition: transform 1000ms var(--e-mech) calc(var(--ml-at) + var(--hl, 1) * var(--ml-step) + 360ms);
+  }
+  .js .hero-eyebrow s{ transform: scaleX(0); transform-origin: left center; }
+  .js #hero.in .hero-eyebrow s{ transform:none; transition: transform 700ms var(--e-mech); }
+
+  .js .cap .u{ transform: scaleX(0); }
+  .js .cap.in .u{
+    transform:none;
+    transition: transform 1100ms var(--e-mech) calc(var(--rd, 0ms) + 100ms),
+                background-color var(--d-1) var(--e-out);
+  }
+  /* duration bars start once their row has landed */
+  .js .tl-row .bar-fill{ transform: scaleX(0); }
+  .js .tl-row.in .bar-fill{
+    transform: scaleX(var(--w, .5));
+    transition: transform 1400ms var(--e-mech) calc(var(--rd, 0ms) + 380ms);
+  }
+
+  /* ---- title block: the frame is ruled from two opposite corners, then the
+     cells fill in reading order and the scale bar ticks across ---- */
+  .js .tblock{ border-color: transparent; background-color: transparent; }
+  .js .tblock.in{
+    background-color: var(--paper-raised);
+    transition: background-color 900ms var(--e-out) calc(var(--rd, 0ms) + 200ms);
+  }
+  .js .tblock::before, .js .tblock::after{
+    content:""; position:absolute; inset:-1px; pointer-events:none;
+    border: 0 solid var(--rule-2);
+  }
+  .js .tblock::before{ border-width: 1px 0 0 1px; clip-path: inset(0 100% 100% 0); }
+  .js .tblock::after { border-width: 0 1px 1px 0; clip-path: inset(100% 0 0 100%); }
+  .js .tblock.in::before, .js .tblock.in::after{
+    clip-path: inset(0);
+    transition: clip-path 1100ms var(--e-mech) var(--rd, 0ms);
+  }
+  .js .tblock.in::after{ transition-delay: calc(var(--rd, 0ms) + 220ms); }
+  .js .scalebar i{ transform: scaleX(0); transform-origin: left center; }
+  .js .sheet-foot.in .scalebar i{
+    transform:none;
+    transition: transform 500ms var(--e-mech) calc(var(--rd, 0ms) + 260ms + var(--k, 0) * 90ms);
+  }
+
+  /* ---- diagrams: drafted line by line (timing per mark is set by JS) ---- */
+  .js svg.dg .dw{ stroke-dasharray: var(--len, 400px); stroke-dashoffset: var(--len, 400px); }
+  .js .figure.on svg.dg .dw{
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset var(--dur, 900ms) var(--e-mech) var(--dl, 0ms);
+  }
+  .js svg.dg :is(.fd, .fd-sg){ opacity:0; }
+  .js .figure.on svg.dg :is(.fd, .fd-sg){ opacity:1; transition: opacity 620ms var(--e-out) var(--dl, 0ms); }
+
+  /* theme switch: a short cross-fade instead of a hard cut (JS opts in) */
+  ::view-transition-old(root), ::view-transition-new(root){
+    animation-duration: 380ms;
+    animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+}
+
+/* ============================================================
+   HOVER AND FOCUS
+   Pointer feedback is limited to devices that really hover, so a tap on a
+   phone never leaves a row stuck lit. Keyboard focus gets the same cues.
+   ============================================================ */
+/* A short tick after the case number marks the case under the pointer. Its
+   space is always reserved, so drawing it never moves the label. */
+.case-id b::after{
+  content:""; display:inline-block; width:22px; height:1px;
+  margin-left:.6em; vertical-align:.35em;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform var(--d-2) var(--e-rise);
+}
+.case:focus-within .case-id b::after{ transform: scaleX(1); }
+.spec:focus-within::before{ background: var(--indigo-2); }
+@media (hover: hover){
+  .case:hover .case-id b::after{ transform: scaleX(1); }
+  /* Anywhere in a case its figure's corner marks register; on the figure
+     itself they turn indigo (FIGURE above). */
+  .case:hover .figure::before, .case:hover .figure::after{ opacity:1; }
+  /* rows: the rule above the row lights */
+  .spec:hover::before, .cred:hover::before, .tl-row:hover::before{ background: var(--indigo-2); }
+  .cap:hover .u{ background: var(--indigo-2); }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   Entrances are already off (their hidden states are gated above), so this
+   only flattens what is left: transitions, loops and the letter ripple.
+   ============================================================ */
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{
     animation-duration: 1ms !important;
@@ -753,16 +970,9 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
-  .rv{ opacity:1; transform:none; }
-  .w{ opacity:1; transform:none; }
-  .ml-in{ transform:none; }
   .lr > span{ transform:none !important; }
-  svg.dg .dw{ stroke-dashoffset:0 !important; }
-  svg.dg .fd, svg.dg .fd-sg{ opacity:1 !important; }
   svg.dg .flow{ display:none; }
   #thread .t-pulse{ display:none; }
-  .rule-draw{ transform:none; }
-  .cap .u{ transform:none; }
 }
 </style>
 
@@ -770,9 +980,18 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 /* Runs before first paint so a returning light-theme visitor never sees a dark
    flash. Dark is the default when nothing is stored. */
 (function(){
-  var t = "dark";
+  var root = document.documentElement, t = "dark";
   try { if (localStorage.getItem("sp-theme") === "light") t = "light"; } catch(e){}
-  document.documentElement.setAttribute("data-theme", t);
+  root.setAttribute("data-theme", t);
+
+  /* Entrance animations start content hidden and need the page script to
+     reveal it. .js switches those hidden states on; if the page script has not
+     reported in (rv-live) by the time the document is parsed, it never will,
+     so take .js away again and the page shows as a finished static sheet. */
+  root.classList.add("js");
+  document.addEventListener("DOMContentLoaded", function(){
+    if (!root.classList.contains("rv-live")) root.classList.remove("js");
+  });
 })();
 </script>
 
@@ -819,15 +1038,15 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      ============================================================ -->
 <section class="sec" id="hero" data-station="Origin" data-thread="0.13">
   <div class="wrap">
-    <div class="hero-eyebrow mono"><s></s> Vaasa, Finland · Active student status · Right to work in Finland</div>
+    <div class="hero-eyebrow mono"><s></s> <span>Vaasa, Finland · Active student status · Right to work in Finland</span></div>
 
-    <h1 class="hero-title" id="heroTitle">I build the systems that turn operational data into <em>decisions.</em></h1>
+    <h1 class="hero-title" id="heroTitle" data-ml>I build the systems that turn operational data into <em>decisions.</em></h1>
 
-    <p class="hero-lede rv">
+    <p class="hero-lede">
       EHS Trainee at Danfoss and M.Sc. student in Industrial Engineering and Management at the University of Vaasa, with an IPMA Foundation certificate in project management. Until September 2026 I led a five-person quality team at SkillCat and built the analytical tools that team ran on.
     </p>
 
-    <dl class="hero-meta rv">
+    <dl class="hero-meta">
       <div><dt class="mono">Current</dt><dd>EHS Trainee, Danfoss</dd></div>
       <div><dt class="mono">Certification</dt><dd>IPMA Foundation, May 2026</dd></div>
       <div><dt class="mono">Academic</dt><dd>M.Sc. IEM, GPA 4.09 / 5 · 86 ECTS</dd></div>
@@ -844,7 +1063,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.02 / Work</div>
       <div>
-        <h2>Four projects, measured.</h2>
+        <h2 data-ml>Four projects, measured.</h2>
         <p class="sub">A live certification cohort at SkillCat, then three graded M.Sc. projects: packaging for 400 ABB switch models, a simulated factory cell, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
       </div>
     </div>
@@ -854,7 +1073,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="case-top">
         <div class="case-id mono"><b>Case 01</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
         <div>
-          <h3>SkillMap Cohort 1 Tracker</h3>
+          <h3 data-ml>SkillMap Cohort 1 Tracker</h3>
           <div class="ctx mono">79 candidates · 10-week HVAC certification · weekly risk triage</div>
           <p class="body">Weekly risk review on this cohort began as a manual pass across all 79 enrolled candidates. I replaced it with a 47-column tracker in Google Sheets, driven by Apps Script, that scores every candidate against rule-based criteria and classifies them On Track, At Risk, or Not On Track. The weekly pass now starts from a shortlist of 33 flagged cases rather than the full roster, and the same rules generate the end-of-week escalation report that goes to management.</p>
           <p class="body">Flagging a case is one decision. Acting on the flag is a different one. When the Chief of Staff proposed full deadline automation, I recommended a manual-review dashboard with a bulk-fail action instead. Automating the flag is cheap. Automating the consequence is not, because a wrong auto-fail costs a candidate their place. The final data settled it: all 45 candidates who passed submitted late and none on time, so automated deadline enforcement would have failed the entire graduating group.</p>
@@ -940,7 +1159,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="case-top">
         <div class="case-id mono"><b>Also at SkillCat</b>Nov 2024 to<br>Sep 2026</div>
         <div>
-          <h3>What the team ran on</h3>
+          <h3 data-ml>What the team ran on</h3>
           <div class="ctx mono">Onboarding · QA pipeline · Reporting · Workflow record</div>
           <div class="specs">
           <div class="spec">
@@ -982,7 +1201,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="case-top">
         <div class="case-id mono"><b>Case 02</b>TUTA3240<br>Supply Chain Design<br>Grade 5 / 5</div>
         <div>
-          <h3>ABB Hurricane packaging optimisation</h3>
+          <h3 data-ml>ABB Hurricane packaging optimisation</h3>
           <div class="ctx mono">400 SKUs · 30+ box types · Individual project · Industry brief from ABB</div>
           <p class="body">ABB packs its Hurricane switches, 400 models from 1.5 to 95 kg, by hand into more than 30 corrugated box types. After a visit to ABB, I took the dimensions and weights for every switch and box pair and calculated the void percentage for each. Several box families ran at 50 to 74% empty space.</p>
           <p class="body">I proposed two concepts. The first is a height-adjustable box with pre-scored crease lines, which also lets two near-identical box families share one footprint. The second is a kirigami honeycomb insert cut from flat corrugated sheet, replacing loose filler. Combined, I estimated about 12% less packaging weight (10% less corrugated board per box, 30% fewer inserts) and roughly 0.3 kg CO2e saved per unit, in a mono-material design aligned with the upcoming PPWR.</p>
@@ -1061,7 +1280,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="case-top">
         <div class="case-id mono"><b>Case 03</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
         <div>
-          <h3>Factory cell production simulation</h3>
+          <h3 data-ml>Factory cell production simulation</h3>
           <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
           <p class="body">I built a complete 3D factory cell in Visual Components &mdash; warehouse shelf, twin conveyors, vertical mill, coordinate measuring machine, articulated robot and manual assembly &mdash; then ran it for an hour and measured output at the sink. The first run gave 55 units per hour, and the constraint was not a machine: one operator was busy almost continuously while parts queued on the conveyors and the robot sat idle inside the fence. A second operator took it to 89, a second manual workstation to 100, and a third operator with reordered transport priorities to 130. The mill, the CMM and the robot were never touched.</p>
         </div>
@@ -1194,7 +1413,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="case-top">
         <div class="case-id mono"><b>Case 04</b>Decision Analysis<br>Scenario planning<br>Grade 5 / 5</div>
         <div>
-          <h3>Scenario planning under uncertainty</h3>
+          <h3 data-ml>Scenario planning under uncertainty</h3>
           <div class="ctx mono">4 policy alternatives · expected value and Hurwicz · 300 × 300 grid</div>
           <p class="body">A simulated Koala Ebola outbreak in a tourist hub with heavy connectivity to Finland, and four policy alternatives spanning the intervention spectrum: minimal travel restrictions, mandatory testing and quarantine, border closure, and internal lockdown. Writing as the Ministry of Health and Wellbeing, I scored all four across four scenarios on a single measure, change in Finnish GDP, with the matrix values justified against COVID-19 non-pharmaceutical intervention studies and tourism's 5.3% share of Finnish GDP in 2019.</p>
           <p class="body">Two decision rules, because they answer different questions. The expected value rule carries belief about containment; the Hurwicz rule carries the decision-maker's optimism. Combined with equal weights after affine scaling, then swept across a 300 × 300 grid of containment probability against optimism. Testing and quarantine proved the most robust policy, optimal across the widest combined range. Minimal restrictions win only when containment is likely and the decision-maker is optimistic; internal lockdown only when containment is unlikely and they are pessimistic.</p>
@@ -1284,7 +1503,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.03 / Experience</div>
       <div>
-        <h2>Now in EHS at Danfoss, after two years in quality at SkillCat.</h2>
+        <h2 data-ml>Now in EHS at Danfoss, after two years in quality at SkillCat.</h2>
         <p class="sub">Cross-functional, and usually starting from a blank sheet.</p>
       </div>
     </div>
@@ -1296,7 +1515,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
           <h3>EHS Trainee</h3>
           <div class="org">Danfoss. Environment, health and safety. Started October 2026.</div>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.06;--dl:0ms"></div></div><small>Current</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.06"></div></div><small>Current</small></div>
       </article>
 
       <article class="tl-row">
@@ -1316,7 +1535,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
             <li>Tested and evaluated AI agent performance for slide digitization and SME tracking workflows.</li>
           </ul>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:1;--dl:160ms"></div></div><small>Team of 5</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:1"></div></div><small>Team of 5</small></div>
       </article>
 
       <article class="tl-row">
@@ -1328,7 +1547,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
             <li>Co-founded BestB4, a real-time discount platform connecting Finnish grocery retailers with price-sensitive, sustainability-minded shoppers to cut food waste. Built as a two-month project in Summer Bloom 2026, the Vaasa Startup Factory student incubator run with the six universities of Vaasa. The project closed when the programme ended.</li>
           </ul>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34;--dl:160ms"></div></div><small>Incubator project</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.34"></div></div><small>Incubator project</small></div>
       </article>
 
       <article class="tl-row">
@@ -1341,7 +1560,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
             <li>Coordinated contributor schedules across multiple time zones and led editorial quality for Olympic Sports.</li>
           </ul>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.62;--dl:320ms"></div></div><small>10M+ readers</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.62"></div></div><small>10M+ readers</small></div>
       </article>
 
       <article class="tl-row">
@@ -1353,7 +1572,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
             <li>Maintained structured information systems for data accuracy, version control, and documentation quality across large content libraries.</li>
           </ul>
         </div>
-        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.78;--dl:480ms"></div></div><small>Version control</small></div>
+        <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.78"></div></div><small>Version control</small></div>
       </article>
     </div>
   </div>
@@ -1367,7 +1586,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.04 / Skills</div>
       <div>
-        <h2>Skills.</h2>
+        <h2 data-ml>Skills.</h2>
         <p class="sub">Operations and quality on one side; environment, simulation and data on the other.</p>
       </div>
     </div>
@@ -1378,23 +1597,23 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <ul><li>QA pipeline design</li><li>Process mapping and documentation</li><li>Rule-based risk classification</li><li>Escalation tracking and reporting</li><li>Root cause analysis</li><li>KPI development</li><li>Bottleneck analysis</li></ul>
       </div>
       <div class="cap">
-        <h4>Environment &amp; circularity</h4><div class="u" style="--dl:90ms"></div>
+        <h4>Environment &amp; circularity</h4><div class="u"></div>
         <ul><li>Life cycle assessment (openLCA)</li><li>Material flow analysis</li><li>Waste stream and hotspot identification</li><li>Packaging and material reduction</li><li>PPWR</li></ul>
       </div>
       <div class="cap">
-        <h4>Data &amp; analysis</h4><div class="u" style="--dl:180ms"></div>
+        <h4>Data &amp; analysis</h4><div class="u"></div>
         <ul><li>Excel</li><li>Google Sheets + Apps Script</li><li>Looker Studio</li><li>Power BI (basic)</li><li>SAS</li><li>GNU Octave</li><li>Scenario and sensitivity analysis</li></ul>
       </div>
       <div class="cap">
-        <h4>Project delivery</h4><div class="u" style="--dl:270ms"></div>
+        <h4>Project delivery</h4><div class="u"></div>
         <ul><li>Jira</li><li>Confluence</li><li>Asana</li><li>Scrum and Kanban facilitation</li><li>Stakeholder reporting</li><li>IPMA Foundation (2026)</li></ul>
       </div>
       <div class="cap">
-        <h4>Simulation</h4><div class="u" style="--dl:360ms"></div>
+        <h4>Simulation</h4><div class="u"></div>
         <ul><li>Visual Components</li><li>3D production simulation</li><li>Human-robot collaboration</li><li>Layout optimisation</li></ul>
       </div>
       <div class="cap">
-        <h4>Languages</h4><div class="u" style="--dl:450ms"></div>
+        <h4>Languages</h4><div class="u"></div>
         <ul><li>English (C1, IELTS 7.5)</li><li>Finnish (B1, actively studying)</li><li>Bengali (native)</li><li>Hindi (fluent)</li></ul>
       </div>
     </div>
@@ -1409,7 +1628,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.05 / Education</div>
       <div>
-        <h2>Education and certification.</h2>
+        <h2 data-ml>Education and certification.</h2>
       </div>
     </div>
 
@@ -1452,11 +1671,11 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <div class="sec-head">
       <div class="sec-tag mono"><i></i>ST.06 / Contact</div>
       <div>
-        <h2>Get in touch.</h2>
+        <h2 data-ml>Get in touch.</h2>
       </div>
     </div>
 
-    <dl class="tblock rv">
+    <dl class="tblock">
       <div class="tb-cell span2">
         <dt>Name</dt><dd class="lg">Sampurna Pal</dd>
       </div>
@@ -1527,8 +1746,13 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   applyTheme(document.documentElement.getAttribute("data-theme") || "dark");
   tgl.addEventListener("click", function(){
     var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    applyTheme(next);
-    try { localStorage.setItem("sp-theme", next); } catch(e){}
+    function swap(){
+      applyTheme(next);
+      try { localStorage.setItem("sp-theme", next); } catch(e){}
+    }
+    // Cross-fade the whole sheet where the browser can; elsewhere it cuts.
+    if (!REDUCED && document.startViewTransition) document.startViewTransition(swap);
+    else swap();
   });
 
   /* ==========================================================
@@ -1621,10 +1845,27 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      drop that stretch, so the line interrupts and resumes — the way a drafted
      leader line breaks around annotation rather than running through it. */
 
+  // A heading still waiting for its entrance sits translated below its mask, and
+  // one mid-entrance is partway up. The thread must break where the text will
+  // finally rest, so add back however far the mask transforms have it lifted.
+  function liftOf(el, cache){
+    var inner = el.closest(".ml-in");
+    if (!inner) return 0;
+    if (cache.has(el)) return cache.get(el);
+    var dy = 0;
+    for (var n = el; n; n = n.parentElement){
+      var t = getComputedStyle(n).transform;
+      if (t && t !== "none") dy += new DOMMatrixReadOnly(t).m42;
+      if (n === inner) break;
+    }
+    cache.set(el, dy);
+    return dy;
+  }
+
   // Individual rendered text-line boxes, plus whole figures, in document space.
   // Used only to decide where the thread must break.
   function collectLineRects(){
-    var sx = window.pageXOffset, sy = window.pageYOffset, out = [];
+    var sx = window.pageXOffset, sy = window.pageYOffset, out = [], lifts = new Map();
     document.querySelectorAll("main .figure").forEach(function(f){
       var r = f.getBoundingClientRect();
       out.push({ left:r.left+sx, right:r.right+sx, top:r.top+sy, bottom:r.bottom+sy });
@@ -1640,9 +1881,10 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     while ((n = walker.nextNode())){
       range.selectNodeContents(n);
       var rs = range.getClientRects();
+      var oy = sy - liftOf(n.parentElement, lifts);
       for (var i = 0; i < rs.length; i++){
         if (rs[i].width < 1 || rs[i].height < 1) continue;
-        out.push({ left:rs[i].left+sx, right:rs[i].right+sx, top:rs[i].top+sy, bottom:rs[i].bottom+sy });
+        out.push({ left:rs[i].left+sx, right:rs[i].right+sx, top:rs[i].top+oy, bottom:rs[i].bottom+oy });
       }
     }
     return out;
@@ -1864,6 +2106,13 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 
   /* ==========================================================
      REVEALS
+     Two observers. Sections and figures keep the original one:
+     a section lights its thread station, a figure drafts its
+     diagram. Entrance units (see ENTRANCES in the CSS) use the
+     second, which fires as soon as a unit's edge is in view, as
+     a ratio threshold never trips on a unit taller than the
+     screen, and staggers the units that arrive in the same pass
+     by their order on the page.
      ========================================================== */
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
@@ -1875,9 +2124,108 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     });
   }, { rootMargin: "0px 0px -12% 0px", threshold: 0.06 });
 
-  document.querySelectorAll(".sec, .figure, .case, .tl-row, .caps, .tblock, .specs, .creds").forEach(function(el){
+  document.querySelectorAll(".sec, .figure").forEach(function(el){
     io.observe(el);
   });
+
+  var UNITS = "#hero, .sec-head, .case-top, .spec, .results, .tl-row, .cap, " +
+              ".cred-block > h4, .cred, .offsys, .tblock, .sheet-foot";
+  var STAGGER_MS  = window.matchMedia("(max-width: 720px)").matches ? 60 : 90;
+  var STAGGER_MAX = 5;   // a long batch tops out rather than keeping the last rows waiting
+
+  var rio = new IntersectionObserver(function(entries){
+    var batch = [];
+    entries.forEach(function(e){
+      if (!e.isIntersecting) return;
+      batch.push(e.target);
+      rio.unobserve(e.target);
+    });
+    batch.sort(function(a, b){
+      return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
+    batch.forEach(function(el, k){
+      var rd = Math.min(k, STAGGER_MAX) * STAGGER_MS;
+      el.style.setProperty("--rd", rd + "ms");
+      el.classList.add("in");
+      if (el.classList.contains("results")) countUp(el, rd);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0 });
+
+  document.querySelectorAll(UNITS).forEach(function(el){ rio.observe(el); });
+
+  // Siblings inside a unit carry their index (--k) for their own stagger
+  [".hero-meta > div", ".results > div", ".tblock > .tb-cell", ".sheet-foot > *", ".scalebar > i"]
+    .forEach(function(sel){
+      document.querySelectorAll(sel).forEach(function(el){
+        el.style.setProperty("--k", Array.prototype.indexOf.call(el.parentElement.children, el));
+      });
+    });
+  document.querySelectorAll(".cap ul").forEach(function(ul){
+    Array.prototype.forEach.call(ul.children, function(li, k){
+      li.style.setProperty("--k", Math.min(k, 8));
+    });
+  });
+
+  /* ==========================================================
+     RESULT FIGURES COUNT UP
+     Each figure runs from zero to its printed value as its cell
+     fades in. The box is held at its final width for the run,
+     so the unit beside it never shifts, and the original text
+     is put back exactly at the end.
+     ========================================================== */
+  var COUNT_MS = 1000;
+  var COUNT_RE = /^([−-]?)(\d+(?:\.(\d+))?)$/;
+
+  function countUp(dl, rd){
+    if (REDUCED) return;
+    dl.querySelectorAll(".num").forEach(function(num, k){
+      var text = num.textContent.trim();
+      var m = COUNT_RE.exec(text);
+      if (!m) return;
+      var sign = m[1], target = parseFloat(m[2]), places = m[3] ? m[3].length : 0;
+
+      num.style.minWidth = num.getBoundingClientRect().width + "px";
+      num.style.display = "inline-block";
+      num.textContent = sign + (0).toFixed(places);
+
+      // Matches the cell's own fade: 150ms in, 80ms per cell (ENTRANCES)
+      setTimeout(function(){
+        var start = null;
+        requestAnimationFrame(function step(now){
+          if (start === null) start = now;
+          var t = Math.min(1, (now - start) / COUNT_MS);
+          if (t < 1){
+            var eased = 1 - Math.pow(1 - t, 4);
+            num.textContent = sign + (target * eased).toFixed(places);
+            requestAnimationFrame(step);
+          } else {
+            num.textContent = text;
+            num.style.minWidth = "";
+            num.style.display = "";
+          }
+        });
+      }, rd + 150 + k * 80);
+    });
+  }
+
+  /* ==========================================================
+     SCROLL SPY — the nav link for the section being read
+     A thin band across the upper middle of the viewport; the
+     section crossing it is current. Sections with no nav link
+     (the hero, skills, education) clear the mark.
+     ========================================================== */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.bar-links a[href^="#"]'));
+  var spy = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (!e.isIntersecting) return;
+      var href = "#" + e.target.id;
+      navLinks.forEach(function(a){
+        if (a.getAttribute("href") === href) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      });
+    });
+  }, { rootMargin: "-38% 0px -58% 0px", threshold: 0 });
+  document.querySelectorAll("main > .sec[id]").forEach(function(s){ spy.observe(s); });
 
   /* ==========================================================
      MASKED LINE REVEAL
@@ -1885,78 +2233,116 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      probed in place, banded by the offsetTop it landed on,
      then re-rendered one masked line at a time. The rendered
      text stays whole per line, so nothing is split for a
-     screen reader and copy-paste survives.
+     screen reader and copy-paste survives. An inline wrapper
+     around words (the hero's <em>) is carried through.
      ========================================================== */
-  var mlTargets = document.querySelectorAll("[data-ml]");
+  var mlTargets = Array.prototype.slice.call(document.querySelectorAll("[data-ml]"));
+
+  // Words in reading order, each with the inline tag that wraps it, if any
+  function mlWords(el){
+    var out = [];
+    (function walk(node, tag){
+      for (var i = 0; i < node.childNodes.length; i++){
+        var c = node.childNodes[i];
+        if (c.nodeType === 3){
+          c.nodeValue.split(/\s+/).forEach(function(w){ if (w) out.push({ text: w, tag: tag }); });
+        } else if (c.nodeType === 1){
+          walk(c, c.tagName.toLowerCase());
+        }
+      }
+    })(el, null);
+    return out;
+  }
+
+  function mlWord(w){
+    if (!w.tag) return document.createTextNode(w.text);
+    var t = document.createElement(w.tag);
+    t.textContent = w.text;
+    return t;
+  }
 
   function mlBand(el, words){
-    var probes = [], i;
     el.textContent = "";
-    for (i = 0; i < words.length; i++){
+    var probes = words.map(function(w, i){
       var probe = document.createElement("span");
       probe.style.display = "inline-block";
-      probe.textContent = words[i];
+      probe.appendChild(mlWord(w));
       el.appendChild(probe);
-      probes.push(probe);
       if (i < words.length - 1) el.appendChild(document.createTextNode(" "));
-    }
+      return probe;
+    });
 
-    var groups = [], current = [], lastTop = null;
-    for (i = 0; i < probes.length; i++){
-      var top = probes[i].offsetTop;
+    var lines = [], current = [], lastTop = null;
+    probes.forEach(function(probe, i){
+      var top = probe.offsetTop;
       if (lastTop !== null && top > lastTop + 1){
-        groups.push(current);
+        lines.push(current);
         current = [];
       }
       current.push(words[i]);
       lastTop = top;
-    }
-    if (current.length) groups.push(current);
-
-    return groups;
+    });
+    if (current.length) lines.push(current);
+    return lines;
   }
 
-  function mlRender(el, groups, startIndex){
+  // Consecutive words that share a wrapper go back into one element
+  function mlAppend(parent, words){
+    var i = 0;
+    while (i < words.length){
+      var tag = words[i].tag, run = [];
+      while (i < words.length && words[i].tag === tag) run.push(words[i++].text);
+      parent.appendChild(mlWord({ text: run.join(" "), tag: tag }));
+      if (i < words.length) parent.appendChild(document.createTextNode(" "));
+    }
+  }
+
+  function mlRender(el, lines){
     el.textContent = "";
-    for (var i = 0; i < groups.length; i++){
-      var line = document.createElement("span");
-      line.className = "ml-line";
+    lines.forEach(function(line, i){
+      var outer = document.createElement("span");
+      outer.className = "ml-line";
       var inner = document.createElement("span");
       inner.className = "ml-in";
-      inner.style.setProperty("--i", startIndex + i);
+      inner.style.setProperty("--i", i);
+      mlAppend(inner, line);
       // Trailing space keeps the word boundary intact across the line break,
       // so textContent and copy-paste do not run "goes" into "in."
-      inner.textContent = groups[i].join(" ") + (i < groups.length - 1 ? " " : "");
-      line.appendChild(inner);
-      el.appendChild(line);
-    }
-    return groups.length;
+      if (i < lines.length - 1) inner.appendChild(document.createTextNode(" "));
+      outer.appendChild(inner);
+      el.appendChild(outer);
+    });
+    // The copy after a heading waits on its line count (--hl in ENTRANCES)
+    el.parentElement.style.setProperty("--hl", lines.length);
   }
 
   function mlSplit(){
-    var index = 0;
-    for (var i = 0; i < mlTargets.length; i++){
-      var el = mlTargets[i];
-      var text = el.getAttribute("data-ml-text");
-      if (!text){
-        text = el.textContent.replace(/\s+/g, " ").trim();
-        el.setAttribute("data-ml-text", text);
-      }
-      // The lede continues the heading's stagger rather than restarting it
-      index += mlRender(el, mlBand(el, text.split(" ")), index);
-    }
+    mlTargets.forEach(function(el){
+      if (!el.mlWords) el.mlWords = mlWords(el);
+      mlRender(el, mlBand(el, el.mlWords));
+      el.classList.add("ml-ready");
+    });
   }
 
   if (!REDUCED && mlTargets.length){
     mlSplit();
 
-    var mlTimer = null;
+    // Only a width change can rewrap a heading. Phones fire resize when the
+    // address bar slides on scroll, and rebanding then would snap any heading
+    // that is mid-entrance, so height-only resizes are ignored.
+    var mlTimer = null, mlWidth = window.innerWidth;
     window.addEventListener("resize", function(){
+      if (window.innerWidth === mlWidth) return;
+      mlWidth = window.innerWidth;
       // Rebanding mid-drag would thrash layout, so it settles first
       if (mlTimer) clearTimeout(mlTimer);
       mlTimer = setTimeout(mlSplit, 150);
     }, { passive: true });
   }
+
+  // Everything that hides content is now wired to reveal it, so the <head>
+  // fail-safe can stand down.
+  document.documentElement.classList.add("rv-live");
 
   /* ==========================================================
      TITLE-BLOCK LINK RIPPLE
@@ -1997,56 +2383,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   document.querySelectorAll(".figure").forEach(function(el){ pauseIO.observe(el); });
 
   /* ==========================================================
-     HERO TYPESET — words settle in like a plotter laying down type
-     ========================================================== */
-  (function(){
-    var h = document.getElementById("heroTitle");
-    var html = h.innerHTML;
-    // wrap each word, preserving the <em>
-    var tmp = document.createElement("div");
-    tmp.innerHTML = html;
-    var out = "";
-    function walk(node){
-      for (var i = 0; i < node.childNodes.length; i++){
-        var c = node.childNodes[i];
-        if (c.nodeType === 3){
-          var words = c.nodeValue.split(/(\s+)/);
-          for (var w = 0; w < words.length; w++){
-            if (/^\s+$/.test(words[w])) out += words[w];
-            else if (words[w]) out += '<span class="w">' + words[w] + '</span>';
-          }
-        } else if (c.nodeType === 1){
-          out += "<" + c.tagName.toLowerCase() + ">";
-          walk(c);
-          out += "</" + c.tagName.toLowerCase() + ">";
-        }
-      }
-    }
-    walk(tmp);
-    h.innerHTML = out;
-    var ws = h.querySelectorAll(".w");
-    for (var i = 0; i < ws.length; i++){
-      ws[i].style.transitionDelay = Math.min(i * 22, 240) + "ms";
-    }
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){ h.classList.add("lit-in"); });
-    });
-    // rAF is paused in background tabs; don't leave the headline hidden.
-    setTimeout(function(){ h.classList.add("lit-in"); }, 150);
-    // The words settle into place after a delay that stretches if the tab was
-    // backgrounded during load (rAF throttling). The thread breaks around the
-    // hero title's final geometry, so rebuild once the last word finishes —
-    // whenever that actually happens — rather than trusting a fixed timer.
-    var lastWord = ws[ws.length - 1];
-    if (lastWord){
-      lastWord.addEventListener("transitionend", function reflow(){
-        lastWord.removeEventListener("transitionend", reflow);
-        if (typeof buildThread === "function") buildThread();
-      });
-    }
-  })();
-
-  /* ==========================================================
      BOOT + RESIZE
      ========================================================== */
   function boot(){
@@ -2062,11 +2398,12 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     rt = setTimeout(function(){ measure(document); boot(); }, 180);
   });
 
-  // Two things move text after first paint: reveals change the sheet height, and
-  // the hero intro animates the title words into place (position, not height).
-  // The thread breaks around text geometry, so both must trigger a rebuild —
-  // height changes always do, and the first few ticks rebuild unconditionally to
-  // catch the hero words settling. Measuring H from <main> keeps this loop-safe.
+  // Text can still move after first paint: the interactive cell swaps in for its
+  // flat drawing in the next script, which changes the sheet height. The thread
+  // breaks around text geometry, so height changes trigger a rebuild, and the
+  // first few ticks rebuild unconditionally to catch anything else settling.
+  // (Entrance transforms do not count; liftOf measures through them.)
+  // Measuring H from <main> keeps this loop-safe.
   var settle = 0;
   var settleTimer = setInterval(function(){
     var mainEl = document.querySelector("main");
