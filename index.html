@@ -139,6 +139,9 @@ a{ color: inherit; }
 
 .num{ font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing:-0.01em; }
 
+/* read by screen readers, never seen */
+.sr{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+
 /* ============================================================
    BACKGROUND PLANES — engineering paper, drafting marks
    ============================================================ */
@@ -798,7 +801,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   @keyframes thread { from{ clip-path: inset(0 0 100% 0); } to{ clip-path: inset(0 0 calc(100% - 100vh) 0); } }
   @keyframes plot   { from{ clip-path: inset(0 0 100% 0); } to{ clip-path: inset(0 0 0 0); } }
   @keyframes wipe   { from{ clip-path: inset(0 100% 0 0); } to{ clip-path: inset(0 0 0 0); } }
-  @keyframes rise   { from{ transform: translateY(calc(100% + .35em)); } }
   @keyframes settle { from{ opacity:0; transform: translateY(var(--travel, 22px)); } }
   @keyframes fade   { from{ opacity:0; } }
   @keyframes grow   { from{ transform: scaleX(0); } }
@@ -835,22 +837,75 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   .js:not(.sheet-in) #thread{ clip-path: inset(0 0 100% 0); }
   .js.thread-intro #thread{ animation: thread 1800ms var(--e-mech) backwards; }
 
-  /* ---- display type: masked line rise ---- */
+  /* ---- display type: block wipe ----
+     Per line, an indigo block draws across the words, holds, then pulls
+     away to the right and leaves the line set behind it. The line is
+     inline-block so the block is exactly as wide as its words; the words
+     stay hidden (visibility, so the block, which opts back in, still shows)
+     until the block has fully covered them. */
+  @keyframes block-wipe{
+    0%   { transform: scaleX(0); transform-origin: left center; }
+    45%  { transform: scaleX(1); transform-origin: left center; }
+    55%  { transform: scaleX(1); transform-origin: right center; }
+    100% { transform: scaleX(0); transform-origin: right center; }
+  }
+  @keyframes held   { 0%, 50% { visibility: hidden; } }
   .js [data-ml]:not(.ml-ready){ opacity:0; }   /* until JS has banded it into lines */
   .js .ml-in{
-    animation: rise 1200ms var(--e-rise)
-      calc(var(--rd, 0ms) + var(--ml-at) + var(--i, 0) * var(--ml-step)) backwards paused;
+    display:inline-block; position:relative;
+    --wipe-at: calc(var(--rd, 0ms) + var(--ml-at) + var(--i, 0) * var(--ml-step));
+    animation: held 1000ms linear var(--wipe-at) backwards paused;
   }
-  .js .in .ml-in{ animation-play-state: running; }
-  /* The last word of the hero arrives on its own beat, after its line */
-  .js #heroTitle em{
-    display:inline-block;
-    animation: rise 1200ms var(--e-rise)
-      calc(var(--ml-at) + var(--i, 0) * var(--ml-step) + 300ms) backwards paused;
+  .js .ml-in::after{
+    content:""; position:absolute; inset: .2em -.06em .16em; visibility: visible;
+    background: var(--indigo); transform: scaleX(0); pointer-events:none;
+    animation: block-wipe 1000ms var(--e-mech) var(--wipe-at) backwards paused;
   }
-  .js #hero.in #heroTitle em{ animation-play-state: running; }
+  #heroTitle .ml-in::after{ inset: .04em -.04em .02em; }   /* tight hero leading */
+  .js .in .ml-in, .js .in .ml-in::after{ animation-play-state: running; }
   /* rebanded after a resize: already seen, so no second entrance */
-  .js .ml-done :is(.ml-in, em), .js #heroTitle.ml-done em{ animation: none; }
+  .js .ml-done .ml-in, .js .ml-done .ml-in::after{ animation: none; }
+
+  /* ---- result figures: rolling digits (JS builds the reels) ----
+     A visibility-hidden copy of the final digit holds width and baseline;
+     the reel rides over it, clipped to one digit's height. */
+  @keyframes reel { from{ transform: translateY(0); } }
+  .rd{ display:inline-block; position:relative; clip-path: inset(0 -.1em); }
+  .rd > i{ visibility:hidden; font-style:normal; }
+  .rd > b{
+    position:absolute; left:0; top:0; display:flex; flex-direction:column;
+    font-weight:inherit; line-height:1;
+    transform: translateY(calc(-1em * var(--to)));
+    animation: reel 1600ms var(--e-rise) var(--reel-at, 0ms) backwards;
+  }
+  .rd > b > span{ height:1em; }
+
+  /* ---- border beam: a point of light runs once round the frame of each
+     figure and the contact block after it is drawn ---- */
+  @keyframes beam{
+    0%   { offset-distance: 0%;   opacity:0; }
+    8%   { opacity:1; }
+    88%  { opacity:1; }
+    100% { offset-distance: 100%; opacity:0; }
+  }
+  .beam{ display:none; }
+  @supports (offset-path: rect(0 auto auto 0)){
+    .js .beam{
+      display:block; position:absolute; inset:-1px; padding:2px; pointer-events:none; z-index:1;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    }
+    .js .beam::before{
+      content:""; position:absolute; width:180px; aspect-ratio:1;
+      offset-path: rect(0 auto auto 0); offset-anchor: 90% 50%;
+      background: linear-gradient(to left, var(--ink), var(--indigo) 18%, transparent 75%);
+      animation: beam 2600ms var(--e-mech) var(--beam-at, 0ms) both paused;
+    }
+    .figure  .beam{ --beam-at: 700ms; }
+    .tblock  .beam{ --beam-at: calc(var(--rd, 0ms) + 1300ms); }
+    .js :is(.figure.on, .tblock.in) .beam::before{ animation-play-state: running; }
+  }
 
   /* ---- mono labels: plotter wipe ----
      The boxes shrink to their text so the wipe spends its time on letters */
@@ -2219,44 +2274,63 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   });
 
   /* ==========================================================
-     RESULT FIGURES COUNT UP
-     Each figure runs from zero to its printed value as its cell
-     fades in. The box is held at its final width for the run,
-     so the unit beside it never shifts, and the original text
-     is put back exactly at the end.
+     RESULT FIGURES ROLL
+     Each digit becomes a reel of 0-9, twice over, that spins
+     down to its own digit as its cell arrives (CSS .rd). Signs
+     and decimal points stay put. The reels are aria-hidden with
+     the real figure beside them for screen readers, and the
+     original text is put back exactly once they stop.
      ========================================================== */
-  var COUNT_MS = 1400;
-  var COUNT_RE = /^([−-]?)(\d+(?:\.(\d+))?)$/;
+  var REEL_MS = 1600, REEL_STEP = 70;
 
   function countUp(dl, rd){
     if (REDUCED) return;
     dl.querySelectorAll(".num").forEach(function(num, k){
       var text = num.textContent.trim();
-      var m = COUNT_RE.exec(text);
-      if (!m) return;
-      var sign = m[1], target = parseFloat(m[2]), places = m[3] ? m[3].length : 0;
-
-      num.style.minWidth = num.getBoundingClientRect().width + "px";
-      num.style.display = "inline-block";
-      num.textContent = sign + (0).toFixed(places);
-
+      if (!/\d/.test(text)) return;
       // Matches the cell's own entrance: 200ms in, 110ms per cell (ENTRANCES)
-      setTimeout(function(){
-        var start = null;
-        requestAnimationFrame(function step(now){
-          if (start === null) start = now;
-          var t = Math.min(1, (now - start) / COUNT_MS);
-          if (t < 1){
-            var eased = 1 - Math.pow(1 - t, 4);
-            num.textContent = sign + (target * eased).toFixed(places);
-            requestAnimationFrame(step);
-          } else {
-            num.textContent = text;
-            num.style.minWidth = "";
-            num.style.display = "";
-          }
-        });
-      }, rd + 200 + k * 110);
+      var at = rd + 200 + k * 110;
+
+      var sr = document.createElement("span");
+      sr.className = "sr";
+      sr.textContent = text;
+      var reels = document.createElement("span");
+      reels.setAttribute("aria-hidden", "true");
+      var col = 0;
+      text.split("").forEach(function(ch){
+        if (!/\d/.test(ch)){ reels.appendChild(document.createTextNode(ch)); return; }
+        var cell = document.createElement("span");
+        cell.className = "rd";
+        var hold = document.createElement("i");
+        hold.textContent = ch;
+        var reel = document.createElement("b");
+        for (var n = 0; n < 20; n++){
+          var d = document.createElement("span");
+          d.textContent = n % 10;
+          reel.appendChild(d);
+        }
+        reel.style.setProperty("--to", 10 + Number(ch));
+        reel.style.setProperty("--reel-at", (at + col * REEL_STEP) + "ms");
+        cell.appendChild(hold);
+        cell.appendChild(reel);
+        reels.appendChild(cell);
+        col++;
+      });
+      num.textContent = "";
+      num.appendChild(sr);
+      num.appendChild(reels);
+
+      setTimeout(function(){ num.textContent = text; }, at + col * REEL_STEP + REEL_MS + 100);
+    });
+  }
+
+  // A beam to run round each figure and the contact block once they are drawn
+  if (!REDUCED){
+    document.querySelectorAll(".figure, .tblock").forEach(function(el){
+      var beam = document.createElement("div");
+      beam.className = "beam";
+      beam.setAttribute("aria-hidden", "true");
+      el.appendChild(beam);
     });
   }
 
