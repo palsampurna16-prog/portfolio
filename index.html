@@ -724,8 +724,16 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   transition:opacity 500ms var(--e-out); }
 .cell-hint.gone{ opacity:0; }
 
-.cell-readout{ position:absolute; right:.2rem; top:.2rem; text-align:right; pointer-events:none;
+/* The readout sits in its own column beside the drawing, so the callout
+   labels along the top of the stage can never run underneath it. */
+.cell-top{ display:grid; grid-template-columns:minmax(0,1fr) 11rem; column-gap:1.2rem; align-items:start; }
+.cell-readout{ text-align:right; padding-top:.2rem;
   display:flex; flex-direction:column; gap:.3rem; }
+@media (max-width:720px){
+  .cell-top{ grid-template-columns:minmax(0,1fr); }
+  .cell-readout{ order:-1; flex-direction:row; flex-wrap:wrap; align-items:baseline; gap:.2rem .7rem;
+    text-align:left; padding:0 0 .7rem; }
+}
 .cell-readout .val{ font-family:var(--mono); font-variant-numeric:tabular-nums;
   font-size:clamp(1.6rem,1rem + 2.2vw,2.7rem); line-height:1; letter-spacing:-0.04em;
   color:var(--ink); transition:color 600ms var(--e-out); }
@@ -1384,14 +1392,18 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <div class="figure-head mono"><span class="dot"></span> Fig. 2.3 / Material flow, baseline vs iteration 3 <span class="grow"></span> <span>Units per hour</span></div>
         <div class="figure-body">
           <div id="cellWrap" hidden>
-            <div class="cell-stage" id="cellStage">
-              <canvas id="cellCv"></canvas>
+            <div class="cell-top">
+              <div class="cell-main">
+                <div class="cell-stage" id="cellStage">
+                  <canvas id="cellCv"></canvas>
+                  <div class="cell-hint mono" id="cellHint">Drag to rotate</div>
+                </div>
+              </div>
               <div class="cell-readout mono" id="cellReadout">
                 <span class="val" id="cellRate">55</span>
                 <span class="unit">Units / hour</span>
                 <span class="delta" id="cellDelta">Baseline</span>
               </div>
-              <div class="cell-hint mono" id="cellHint">Drag to rotate</div>
             </div>
             <div class="cell-controls">
               <span class="cell-ctl-label mono">Optimisation step</span>
@@ -2635,7 +2647,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 
   /* ---------- state ---------- */
   let stepF = 0, stepTarget = 0;
-  let rotY = -0.62, rotX = 0.86;
+  let rotY = 2.82, rotX = -0.25;
   let dragRotY = 0, dragRotX = 0;
   let dragging = false, lastX = 0, lastY = 0;
   let idle = 0;
@@ -2643,10 +2655,10 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   let shownRate = 55;
   let phase = 0;
   let lastBand = 0;      // measured depth of the callout band
-  let rotYT = -0.62, rotXT = 0.86;   // camera targets, eased toward
+  let rotYT = 2.82, rotXT = -0.25;   // camera targets, eased toward
   const VIEWS = {
-    iso: { y: -0.62, x: 0.86, label: 'Top view'  },
-    top: { y:  0.00, x: 1.50, label: '3/4 view' }
+    iso: { y: 2.82,    x: -0.25, label: 'Top view'  },
+    top: { y: Math.PI, x: -1.50, label: '3/4 view' }
   };
   let view = 'iso';
 
@@ -3159,7 +3171,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     if (!dragging) return;
     dragRotY += (e.clientX - lastX) * 0.007;
     dragRotX += (e.clientY - lastY) * 0.004;
-    dragRotX = Math.max(-0.25, Math.min(1.15, rotX + dragRotX)) - rotX;
+    dragRotX = Math.max(-1.15, Math.min(0.1, rotX + dragRotX)) - rotX;
     lastX = e.clientX; lastY = e.clientY;
   });
   const release = e => {
