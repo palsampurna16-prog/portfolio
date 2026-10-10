@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Sampurna Pal. EHS Trainee at Danfoss and M.Sc. student in Industrial Engineering and Management at the University of Vaasa. Operations and quality systems.">
+<meta name="description" content="Sampurna Pal. EHS Trainee at Danfoss Drives and M.Sc. student in Industrial Engineering and Management at the University of Vaasa. Operations and quality systems.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sampurnapalportfolio.vercel.app/">
 <meta property="og:title" content="Sampurna Pal — Systems and Operations">
-<meta property="og:description" content="EHS Trainee at Danfoss and M.Sc. student in Industrial Engineering and Management, building operations and quality systems.">
+<meta property="og:description" content="EHS Trainee at Danfoss Drives and M.Sc. student in Industrial Engineering and Management, building operations and quality systems.">
 <meta property="og:image" content="https://sampurnapalportfolio.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="627">
@@ -353,20 +353,73 @@ a:focus-visible > .lr > span{ transform: translateY(-3px); }
 /* ============================================================
    HERO
    ============================================================ */
-#hero{ padding-top: clamp(7rem, 6rem + 6vw, 11rem); padding-bottom: clamp(4rem,3rem + 5vw,7rem); border-top:0; }
+#hero{ padding-top: clamp(5.4rem, 4.6rem + 3vw, 7rem); padding-bottom: clamp(4rem,3rem + 5vw,7rem); border-top:0; }
 
 .hero-eyebrow{ color: var(--slate); display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; }
 .hero-eyebrow s{ display:block; width:34px; height:1px; background: var(--rule-2); text-decoration:none; }
 
-h1.hero-title{
-  font-size: var(--t-hero);
-  line-height: 0.98;
-  letter-spacing: -0.042em;
-  font-weight: 450;
-  margin: 1.7rem 0 0;
-  max-width: 15ch;
+/* The crowd band. Its colours are fixed, not themed: ink on paper. Sizes
+   inside it are in cqh so the portrait, the bubble and the crowd keep their
+   proportions whatever height the band takes. */
+.crowd{
+  --crowd-paper:#F5F3EE; --crowd-ink:#16181A;
+  position:relative; z-index:2; overflow:hidden;
+  container-type:size;
+  height: clamp(280px, 50vh, 500px);
+  margin-top: clamp(1.2rem, 2.4vw, 2rem);
+  background: var(--crowd-paper);
+  color: var(--crowd-ink);
+  border-block: 1px solid var(--rule-2);
 }
-h1.hero-title em{ font-style: normal; color: var(--slate); }
+.crowd-cv{ position:absolute; inset:0; width:100%; height:100%; display:block;
+  opacity:0; transition: opacity 500ms var(--e-out); }
+.crowd.has-crowd .crowd-cv{ opacity:1; }
+.crowd-me{
+  position:absolute; left:50%; bottom:0; height:88cqh; width:auto; max-width:none;
+  transform: translateX(-50%);
+}
+/* Staging. Without script the portrait and bubble are simply there. With it,
+   .crowd-wait holds them back until the crowd image is ready (or a short time
+   limit passes), then .crowd-go plays: the crowd parts, she rises, she speaks. */
+.crowd.crowd-wait .crowd-me{ transform: translate(-50%, 104%); }
+.crowd.crowd-wait h1.crowd-bubble{ opacity:0; }
+.crowd.crowd-go .crowd-me{ animation: crowd-rise 800ms cubic-bezier(.2,.9,.25,1.08) 1000ms both; }
+.crowd.crowd-go h1.crowd-bubble{ animation: crowd-pop 380ms cubic-bezier(.3,1.5,.5,1) 1750ms both; }
+@keyframes crowd-rise{
+  from{ transform: translate(-50%, 104%); }
+  to  { transform: translate(-50%, 0); }
+}
+/* The greeting is the page's h1, drawn as a speech bubble by the portrait. */
+h1.crowd-bubble{
+  position:absolute; top:6cqh; right: calc(50% + 18cqh);
+  margin:0; padding:.62em 1em .68em;
+  font-size: clamp(1.15rem, 6.6cqh, 2.3rem); font-weight:600; line-height:1.1;
+  letter-spacing:-0.025em; white-space:nowrap;
+  color: var(--crowd-ink); background:#fff;
+  border:2.5px solid var(--crowd-ink);
+  border-radius: 48% 52% 50% 50% / 58% 54% 46% 42%;
+  transform-origin: 85% 110%;
+  transform: rotate(-2deg);
+}
+h1.crowd-bubble::after{
+  content:""; position:absolute; right:1.5em; bottom:-.52em; width:.95em; height:.95em;
+  background:#fff; border:solid var(--crowd-ink); border-width:0 2.5px 2.5px 0;
+  transform: rotate(28deg) skewX(24deg);
+}
+@keyframes crowd-pop{
+  from{ opacity:0; transform: scale(.5) rotate(-6deg); }
+  to  { opacity:1; transform: scale(1) rotate(-2deg); }
+}
+/* the words wait for the bubble */
+#hero .hero-lede.rv{ transition-delay: 1300ms; }
+#hero .hero-meta.rv{ transition-delay: 1500ms; }
+@media (max-width: 720px){
+  .crowd{ height: clamp(250px, 76vw, 340px); }
+  .crowd-me{ left:63%; }
+  h1.crowd-bubble{ right:auto; left:4%; top:4cqh; white-space:normal; box-sizing:content-box; max-width:9.8ch;
+    font-size: clamp(.95rem, 6.2cqh, 1.35rem); padding:.55em .8em .6em; transform-origin: 90% 110%; }
+  h1.crowd-bubble::after{ right:1em; }
+}
 
 .hero-lede{
   margin-top: 1.9rem;
@@ -784,6 +837,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   }
   .rv{ opacity:1; transform:none; }
   .w{ opacity:1; transform:none; }
+  .crowd.crowd-go .crowd-me, .crowd.crowd-go h1.crowd-bubble{ animation:none; }
+  #hero .hero-lede.rv, #hero .hero-meta.rv{ transition-delay:0s; }
   .ml-in{ transform:none; }
   .lr > span{ transform:none !important; }
   svg.dg .dw{ stroke-dashoffset:0 !important; }
@@ -849,15 +904,39 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <section class="sec" id="hero" data-station="Origin" data-thread="0.13">
   <div class="wrap">
     <div class="hero-eyebrow mono"><s></s> Vaasa, Finland · Active student status · Right to work in Finland</div>
+  </div>
 
-    <h1 class="hero-title" id="heroTitle">I build the systems that turn operational data into <em>decisions.</em></h1>
+  <!-- A strip of drafting paper, light in both themes: the crowd and the
+       portrait are ink drawings and need paper behind them. -->
+  <div class="crowd" id="crowd">
+    <canvas class="crowd-cv" aria-hidden="true"></canvas>
+    <img class="crowd-me" src="assets/sampurna.webp" width="703" height="959" fetchpriority="high"
+         alt="Line drawing of Sampurna taking a mirror selfie and making a peace sign">
+    <h1 class="crowd-bubble" id="heroTitle">Hi, I&rsquo;m Sampurna.</h1>
+  </div>
+  <script>
+  /* Hold the portrait back until hero-crowd.js says the crowd is ready, but
+     never for long: after 1.4s she comes up regardless. */
+  (function(){
+    var band = document.getElementById("crowd");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    band.classList.add("crowd-wait");
+    window.__crowdGo = function(){
+      if (!band.classList.contains("crowd-wait")) return;
+      band.classList.remove("crowd-wait");
+      band.classList.add("crowd-go");
+    };
+    setTimeout(window.__crowdGo, 1400);
+  })();
+  </script>
 
+  <div class="wrap">
     <p class="hero-lede rv">
-      EHS Trainee at Danfoss and M.Sc. student in Industrial Engineering and Management at the University of Vaasa, with an IPMA Foundation certificate in project management. Until September 2026 I led a five-person quality team at SkillCat and built the analytical tools that team ran on.
+      I&rsquo;m an EHS trainee at Danfoss Drives in Vaasa, working on circular economy and sustainability, and an M.Sc. student in Industrial Engineering and Management at the University of Vaasa. I have five years of work experience, and I led a five-person quality team at SkillCat, where I built the review and reporting tools the team ran on.
     </p>
 
     <dl class="hero-meta rv">
-      <div><dt class="mono">Current</dt><dd>EHS Trainee, Danfoss</dd></div>
+      <div><dt class="mono">Current</dt><dd>EHS Trainee, Danfoss Drives</dd></div>
       <div><dt class="mono">Certification</dt><dd>IPMA Foundation, May 2026</dd></div>
       <div><dt class="mono">Academic</dt><dd>M.Sc. IEM, GPA 4.09 / 5 · 86 ECTS</dd></div>
       <div><dt class="mono">Focus</dt><dd>Operations, quality and EHS systems</dd></div>
@@ -1326,7 +1405,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <div class="tl-when mono">Oct 2026 –<br>Present</div>
         <div class="tl-what">
           <h3>EHS Trainee</h3>
-          <div class="org">Danfoss. Environment, health and safety. Started October 2026.</div>
+          <div class="org">Danfoss Drives, Vaasa. Environment, health and safety, working on circular economy and sustainability. Started October 2026.</div>
         </div>
         <div class="tl-span"><div class="bar-track"><div class="bar-fill" style="--w:.06;--dl:0ms"></div></div><small>Current</small></div>
       </article>
@@ -1510,7 +1589,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <dt>Certification</dt><dd>IPMA Foundation</dd>
       </div>
       <div class="tb-cell">
-        <dt>Current</dt><dd>EHS Trainee, Danfoss</dd>
+        <dt>Current</dt><dd>EHS Trainee, Danfoss Drives</dd>
       </div>
 
       <div class="tb-cell wide">
@@ -1527,6 +1606,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <span>Scale 1:1</span>
     </div>
     <p class="site-copyright mono">&copy; 2026 Sampurna Pal. All rights reserved. Portfolio design, writing, visuals, and case studies may not be reproduced without permission.</p>
+    <p class="site-copyright mono">Hero crowd adapted from Skiper UI (Skiper 39), after a CodePen by zadvorsky. Crowd drawings: Open Peeps by Pablo Stanley.</p>
   </div>
 </section>
 
@@ -2109,6 +2189,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 
 })();
 </script>
+
+<script src="hero-crowd.js" defer></script>
 
 <script>
 /* Fig. 2.3 - the factory cell. The 3D model and three.js are fetched only
