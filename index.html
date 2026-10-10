@@ -653,6 +653,52 @@ h1.crowd-bubble::after{
 }
 
 /* ============================================================
+   COHORT TEAR — Case 02's opening: the page tears open on scroll
+   Shares the cell intro's furniture and states (.scrub, .is-3d,
+   .is-live, .is-still; here .is-3d only means the script can
+   run, there is no WebGL in it). cohort-tear.js clones the
+   sheet into two .tear-half copies, one clipped to each side
+   of the tear, and draws what is behind the paper on the canvas.
+   ============================================================ */
+.tear{
+  /* Behind the page is drawing paper, light in both themes like the hero
+     band, because the people are ink drawings. On the light sheet it is a
+     shade deeper so the gap still reads as a gap. */
+  --tear-behind:#F5F3EE; --tear-fibre:#ffffff; --tear-fail:#e56a4f;
+}
+:root[data-theme="light"] .tear{ --tear-behind:#E4DFD2; --tear-fail:#b8402a; }
+.tear-sheet{ position:relative; z-index:1; }
+.tear-kicker{ color: var(--scrub-dim); margin-bottom: 1rem; }
+/* Poster type, sized so the line spans most of the stage on any window. */
+.tear-word{
+  font-size: min(13vw, 30vh); font-weight:700; line-height:.92;
+  letter-spacing:-0.045em; text-transform:uppercase; white-space:nowrap;
+}
+.tear-word br{ display:none; }
+.tear-cv{ display:none; }
+.scrub.is-3d .tear-sheet, .tear-half{ position:absolute; inset:0; pointer-events:none; }
+.scrub.is-3d .tear-sheet{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 0 var(--gut) 7vh; text-align:center;
+}
+.scrub.is-3d .tear-cv{ display:block; position:absolute; z-index:1; inset:0; width:100%; height:100%; pointer-events:none; }
+.tear-half{ will-change: transform; }
+/* Once the page parts, the two halves stand in for the whole sheet. Two
+   clipped halves at rest would show a hairline seam, so until then it is
+   the sheet itself. */
+.tear:not(.is-torn) .tear-half{ visibility:hidden; }
+.tear.is-torn .scrub-pin > .tear-sheet{ opacity:0; }
+.scrub-hud.bad .val, .scrub-hud.bad .delta{ color: var(--tear-fail); }
+/* An upright screen stacks the rule in two lines, so it stays poster-sized,
+   and drops the small line once the top half lifts into the labels. */
+@media (orientation: portrait){
+  .tear-word{ font-size: min(23vw, 15vh); }
+  .tear-word br{ display:inline; }
+  .tear-half .tear-kicker{ transition: opacity 300ms var(--e-out); }
+  .tear.is-torn .tear-half .tear-kicker{ opacity:0; }
+}
+
+/* ============================================================
    TIMELINE (experience) — process rail with duration bars
    ============================================================ */
 .tl{ display:flex; flex-direction:column; }
@@ -1135,6 +1181,50 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </dl>
     </article>
 
+  </div>
+
+  <!-- ---- THE COHORT TEAR : Case 02's opening, torn open by scrolling ---- -->
+  <section class="scrub tear" id="cohort-tear" aria-labelledby="cohortTearTitle" data-thread-gap>
+    <div class="scrub-pin">
+      <p class="scrub-eyebrow mono">Case 02 · SkillMap Cohort 1</p>
+      <div class="tear-sheet">
+        <p class="tear-kicker mono">Proposed rule</p>
+        <h2 class="tear-word" id="cohortTearTitle">Late = <br>fail</h2>
+      </div>
+      <canvas class="tear-cv" aria-hidden="true"></canvas>
+      <p class="scrub-mode mono" aria-hidden="true"></p>
+      <div class="scrub-dock">
+        <div class="scrub-hud mono" aria-hidden="true">
+          <span class="val">79</span>
+          <span class="unit">Candidates</span>
+          <span class="delta"></span>
+        </div>
+        <div class="scrub-tag">
+          <p>All 45 graduates submitted late. The rule would have failed every one of them.</p>
+          <a class="mono" href="#case-cohort">Read the case <span aria-hidden="true">&darr;</span></a>
+        </div>
+        <a class="scrub-skip mono" href="#case-cohort" aria-label="Skip to the case">Skip <span aria-hidden="true">&darr;</span></a>
+      </div>
+      <div class="scrub-hint mono" aria-hidden="true">
+        <span>Scroll</span>
+        <svg width="14" height="18" viewBox="0 0 14 18"><path d="M7 1V17M2 12l5 5 5-5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="scrub-prog" aria-hidden="true"><i></i></div>
+    </div>
+    <script>
+    /* Decide the section's shape before first paint, as the cell intro does:
+       pinned and several screens tall, one still screen for reduced motion,
+       or the plain lines where the script cannot run. */
+    (function(){
+      var sec = document.getElementById("cohort-tear");
+      if (!("IntersectionObserver" in window) || !("ResizeObserver" in window)) return;
+      var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      sec.classList.add("is-3d", still ? "is-still" : "is-live");
+    })();
+    </script>
+  </section>
+
+  <div class="wrap">
     <!-- ---- CASE 2 : SKILLMAP TRACKER ---- -->
     <article class="case" id="case-cohort">
       <div class="case-top">
@@ -1147,68 +1237,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         </div>
       </div>
 
-      <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 2.1 / Risk triage and final cohort state <span class="grow"></span> <span>Week 10 of 10</span></div>
-        <div class="figure-body">
-          <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of cohort flow: 79 enrolled reduce to 63 active by week 10, splitting into 45 who completed the full program, 9 who finished coursework without submitting hands-on tasks, and 9 who did not complete, alongside a 47-column tracker glyph, a weekly pass-rate sparkline, and a risk triage bar splitting the 79 candidates into 46 classified On Track and 33 flagged for weekly review.">
-            <!-- enrolled -->
-            <g class="hot"><rect class="st dw nd" x="20" y="140" width="150" height="60"/></g>
-            <text class="fd big" x="34" y="170">79</text>
-            <text class="fd" x="34" y="188">ENROLLED</text>
-
-            <path class="ln-ink dw" d="M170 170 H 250"/>
-            <text class="fd" x="182" y="160">−16</text>
-
-            <!-- active -->
-            <g class="hot"><rect class="st dw nd" x="250" y="140" width="170" height="60"/></g>
-            <text class="fd big" x="264" y="170">63</text>
-            <text class="fd" x="264" y="188">ACTIVE · WEEK 10/10</text>
-
-            <!-- fan out -->
-            <path class="ln-sg dw" d="M420 170 C 470 170, 480 92, 540 92"/>
-            <path class="ln-in dw" d="M420 170 C 470 170, 480 176, 540 176"/>
-            <path class="ln dw"    d="M420 170 C 470 170, 480 260, 540 260"/>
-
-            <!-- status bars -->
-            <rect class="fillsg fd" x="540" y="86" width="200" height="7"/>
-            <text class="fd lbl-sg" x="540" y="76">COMPLETED PROGRAM · ALL COURSES + ALL HANDS-ON PASSED</text>
-            <text class="fd" x="750" y="94"><tspan class="lbl-ink">45</tspan> · 57.0%</text>
-
-            <rect class="fillin fd" style="--dl:180ms" x="540" y="170" width="40" height="7"/>
-            <text class="fd lbl-in" style="--dl:180ms" x="540" y="160">ALL COURSES · NO HANDS-ON SUBMITTED</text>
-            <text class="fd" style="--dl:180ms" x="590" y="178"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
-
-            <rect class="fillsl fd" style="--dl:360ms" x="540" y="254" width="40" height="7"/>
-            <text class="fd" style="--dl:360ms" x="540" y="244">DID NOT COMPLETE COURSES</text>
-            <text class="fd" style="--dl:360ms" x="590" y="262"><tspan class="lbl-ink">9</tspan> · 11.4%</text>
-
-            <!-- 47 column glyph -->
-            <g id="colGlyph"></g>
-            <text class="fd" x="20" y="316">47 COLUMNS · APPS SCRIPT AUTOMATION · WEEKLY REPORT TRIGGER</text>
-
-            <!-- sparkline -->
-            <path class="ln thin dw" d="M540 384 H 900"/>
-            <polyline class="ln-in dw" id="sparkline" points=""/>
-            <g id="sparkDots"></g>
-            <text class="fd" x="540" y="316">WEEKLY HANDS-ON PASS RATE · ALL 45 FULL SUBMITTERS PASSED</text>
-            <text class="fd lbl-in" style="--dl:520ms" x="540" y="330">0 ON TIME · 45 LATE</text>
-
-            <!-- weekly risk triage -->
-            <text class="fd" x="20" y="336">WEEKLY RISK TRIAGE · ON TRACK / AT RISK / NOT ON TRACK</text>
-            <rect class="fillsl fd" style="--dl:640ms" x="20" y="346" width="221" height="7"/>
-            <rect class="fillin fd" style="--dl:760ms" x="241" y="346" width="159" height="7"/>
-            <path class="ln-in dw" style="--dl:880ms" d="M241 340 V 362"/>
-            <text class="fd" style="--dl:640ms" x="20" y="374"><tspan class="lbl-ink">46</tspan> ON TRACK</text>
-            <text class="fd lbl-in" style="--dl:760ms" x="241" y="374">33 FLAGGED · REVIEWED WEEKLY</text>
-
-            <!-- pulses -->
-            <path class="flow" style="--sp:4.4s" d="M170 170 H 250"/>
-            <path class="flow" style="--sp:5.6s;--dl:800ms" d="M420 170 C 470 170, 480 92, 540 92"/>
-            <path class="flow" style="--sp:5.6s;--dl:1500ms" d="M420 170 C 470 170, 480 176, 540 176"/>
-          </svg>
-        </div>
-      </div>
-
       <dl class="results">
         <div><dt class="mono">Tracker columns</dt><dd><span class="num">47</span></dd></div>
         <div><dt class="mono">Candidates</dt><dd><span class="num">79</span></dd></div>
@@ -1216,8 +1244,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         <div><dt class="mono">Completed all courses</dt><dd><span class="num">54</span></dd></div>
         <div class="accent"><dt class="mono">Completed program</dt><dd><span class="num">45</span><small>of 79</small></dd></div>
       </dl>
-
-      <p class="note">The flagged figure is the weekly review shortlist produced by the risk rules, not a final outcome; the remaining 46 were classified On Track. Final cohort figures are week 10 of 10, from the last sync on 9 August 2026. Candidate count excludes test accounts present in week 1.</p>
     </article>
 
 
@@ -1276,7 +1302,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 2.2 / Void share by box family and proposed concepts <span class="grow"></span> <span>From the ABB data</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.1 / Void share by box family and proposed concepts <span class="grow"></span> <span>From the ABB data</span></div>
         <div class="figure-body">
           <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Bar chart of void share in four high-void ABB box families: 780 by 580 by 500 at about 50 percent, 780 by 580 by 200 at about 50 percent, 620 by 390 by 290 up to about 58 percent, and 550 by 300 by 320 ranging from 50 to 74 percent across more than 20 switch models. Beside it, two proposed concepts, a height-adjustable box and a kirigami honeycomb insert, combine into one system estimated to cut packaging weight by about 12 percent and save about 0.3 kilograms of CO2e per unit.">
             <text class="fd" x="20" y="24">VOID SHARE · HIGH-VOID BOX FAMILIES</text>
@@ -1355,7 +1381,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 2.3 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.2 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
         <div class="figure-body">
           <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four policy alternatives, minimal restrictions, testing and quarantine, border closure and internal lockdown, feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and expected value with a containment probability, whose combined result was swept across a 300 by 300 grid. Testing and quarantine is optimal across the widest range; minimal restrictions win only when containment is likely and the decision-maker is optimistic; internal lockdown only when containment is unlikely and the decision-maker is pessimistic.">
             <text class="fd" x="20" y="24">FOUR POLICY ALTERNATIVES · MINISTRY OF HEALTH AND WELLBEING</text>
@@ -1686,50 +1712,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   });
 
   /* ==========================================================
-     GENERATED DIAGRAM PARTS
-     ========================================================== */
-
-  // 47-column tracker glyph
-  (function(){
-    var g = document.getElementById("colGlyph");
-    if (!g) return;
-    var x0 = 20, y0 = 262, h = 34, n = 47, step = 8.4;
-    for (var i = 0; i < n; i++){
-      var ln = svgEl("line", {
-        x1: x0 + i*step, y1: y0, x2: x0 + i*step, y2: y0 + h,
-        class: "ln thin dw"
-      });
-      ln.style.setProperty("--dl", (i*14) + "ms");
-      ln.style.setProperty("--dur", "260ms");
-      g.appendChild(ln);
-    }
-    g.appendChild(svgEl("line", { x1:x0, y1:y0, x2:x0+(n-1)*step, y2:y0, class:"ln dw" }));
-    g.appendChild(svgEl("line", { x1:x0, y1:y0+h, x2:x0+(n-1)*step, y2:y0+h, class:"ln dw" }));
-  })();
-
-  // weekly pass-rate sparkline (87 to 100)
-  (function(){
-    var poly = document.getElementById("sparkline");
-    var dots = document.getElementById("sparkDots");
-    if (!poly) return;
-    var vals = [92, 88, 95, 87, 100, 96, 91, 100, 98];
-    var x0 = 544, x1 = 896, yTop = 336, yBot = 380;
-    var pts = [];
-    for (var i = 0; i < vals.length; i++){
-      var x = x0 + (x1 - x0) * (i / (vals.length - 1));
-      var y = yBot - (vals[i] - 84) / (100 - 84) * (yBot - yTop);
-      pts.push(x.toFixed(1) + "," + y.toFixed(1));
-      var c = svgEl("circle", { cx:x.toFixed(1), cy:y.toFixed(1), r: (i === vals.length-1 ? 3.4 : 1.8),
-                                class: (i === vals.length-1 ? "fillsg fd" : "fillsl fd") });
-      c.style.setProperty("--dl", (600 + i*80) + "ms");
-      dots.appendChild(c);
-    }
-    poly.setAttribute("points", pts.join(" "));
-    poly.style.setProperty("--dur", "1600ms");
-  })();
-
-
-  /* ==========================================================
      MEASURE DRAWABLE SHAPES  →  set --len for dash reveal
      ========================================================== */
   function measure(root){
@@ -1775,6 +1757,23 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      drop that stretch, so the line interrupts and resumes — the way a drafted
      leader line breaks around annotation rather than running through it. */
 
+  function gapRects(){
+    var sy = window.pageYOffset;
+    return Array.prototype.map.call(document.querySelectorAll("main [data-thread-gap]"), function(g){
+      var r = g.getBoundingClientRect();
+      return { top:r.top+sy, bottom:r.bottom+sy };
+    });
+  }
+  // A station drawn inside a gap would float over its pinned picture, so one
+  // that lands there moves to just above the gap.
+  var GAP_CLEAR = 48;
+  function clearOfGaps(y, gaps){
+    for (var i = 0; i < gaps.length; i++){
+      if (y > gaps[i].top - GAP_CLEAR && y < gaps[i].bottom + GAP_CLEAR) return gaps[i].top - GAP_CLEAR;
+    }
+    return y;
+  }
+
   // Individual rendered text-line boxes, plus whole figures, in document space.
   // Used only to decide where the thread must break.
   function collectLineRects(){
@@ -1782,6 +1781,12 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     document.querySelectorAll("main .figure").forEach(function(f){
       var r = f.getBoundingClientRect();
       out.push({ left:r.left+sx, right:r.right+sx, top:r.top+sy, bottom:r.bottom+sy });
+    });
+    // A gap (the cohort tear) is a tall pinned band the thread must not show
+    // in: its whole extent counts as one full-width block, so the line stops
+    // above it and picks up again below.
+    gapRects().forEach(function(g){
+      out.push({ left:-1e6, right:1e6, top:g.top, bottom:g.bottom });
     });
     var walker = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT, {
       acceptNode: function(n){
@@ -1824,7 +1829,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     thread.appendChild(g);
 
     // Two anchors per section at its hardcoded x fraction — the original wander.
-    var pts = [], stations = [], bridged = 0;
+    var pts = [], stations = [], bridged = 0, gaps = gapRects();
     sections.forEach(function(sec){
       var fx = parseFloat(sec.getAttribute("data-thread"));
       var rect = sec.getBoundingClientRect();
@@ -1840,8 +1845,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
         bridged += drop;
       }
       var x = Math.round(clamp(fx, 0.06, 0.94) * W);
-      var y1 = top + rect.height * 0.22;
-      var y2 = top + rect.height * 0.80;
+      var y1 = clearOfGaps(top + rect.height * 0.22, gaps);
+      var y2 = clearOfGaps(top + rect.height * 0.80, gaps);
       pts.push({ x:x, y:y1 }, { x:x, y:y2 });
       stations.push({ x:x, y:y1, sec:sec });
     });
@@ -2253,24 +2258,27 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <script src="hero-crowd.js" defer></script>
 
 <script>
-/* The cell intro. Fetched as the section comes within a screen of the
-   viewport, which on most windows is straight after load. If the module or
-   WebGL fails, the section drops back to its plain band. */
+/* The two pinned sequences. Each script is fetched as its section comes
+   within a screen of the viewport (for the cell intro that is straight after
+   load on most windows). If one fails to load or to start, its section drops
+   back to its plain lines. */
 (function(){
-  var sec = document.getElementById('cell-intro');
-  if (!sec || !sec.classList.contains('is-3d')) return;
-  var io = new IntersectionObserver(function(entries){
-    if (!entries[0].isIntersecting) return;
-    io.disconnect();
-    import('./cell-scrub.js')
-      .then(function(m){ m.mount(); })
-      .catch(function(){
-        sec.classList.remove('is-3d', 'is-live', 'is-still');
-        // the page just got several screens shorter: let the thread re-measure
-        window.dispatchEvent(new Event('resize'));
-      });
-  }, { rootMargin: '100% 0px' });
-  io.observe(sec);
+  [['cell-intro', './cell-scrub.js'], ['cohort-tear', './cohort-tear.js']].forEach(function(entry){
+    var sec = document.getElementById(entry[0]);
+    if (!sec || !sec.classList.contains('is-3d')) return;
+    var io = new IntersectionObserver(function(entries){
+      if (!entries[0].isIntersecting) return;
+      io.disconnect();
+      import(entry[1])
+        .then(function(m){ m.mount(); })
+        .catch(function(){
+          sec.classList.remove('is-3d', 'is-live', 'is-still');
+          // the page just got several screens shorter: let the thread re-measure
+          window.dispatchEvent(new Event('resize'));
+        });
+    }, { rootMargin: '100% 0px' });
+    io.observe(sec);
+  });
 })();
 </script>
 
