@@ -882,6 +882,9 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 /* ============================================================
    TITLE BLOCK (contact) — the blueprint resolves
    ============================================================ */
+/* Work has no heading: the cell intro above is its opening, so the first
+   case follows it closely instead of after a full section gap. */
+#work{ padding-top: clamp(1.2rem, 3.5vw, 3rem); }
 #contact{ padding-bottom: clamp(4rem,8vw,7rem); }
 .tblock{
   border:1px solid var(--rule-2);
@@ -1067,7 +1070,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <!-- ============================================================
      THE CELL OPENS — Case 01's factory cell, built by scrolling.
      Not a station on the thread: the thread passes behind it
-     (data-thread-bridge) and comes out under the Work label.
+     (data-thread-bridge) and comes out under the first case label.
      ============================================================ -->
 <section class="scrub" id="cell-intro" aria-labelledby="cellIntroTitle" data-thread-bridge>
   <div class="scrub-pin">
@@ -1111,16 +1114,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <!-- ============================================================
      02 · WORK
      ============================================================ -->
-<section class="sec" id="work" data-station="Case studies" data-thread="0.72">
+<section class="sec" id="work" aria-label="Work" data-station="Case studies" data-thread="0.72">
   <div class="wrap">
-    <div class="sec-head">
-      <div class="sec-tag mono"><i></i>ST.02 / Work</div>
-      <div>
-        <h2>Four projects, measured.</h2>
-        <p class="sub">A simulated factory cell from my M.Sc., a live certification cohort at SkillCat, then two more graded M.Sc. projects: packaging for 400 ABB switch models and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
-      </div>
-    </div>
-
     <!-- ---- CASE 1 : FACTORY CELL ---- -->
     <article class="case" id="case-sim">
       <div class="case-top">
@@ -1974,9 +1969,9 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     }
 
     T = { line: line, total: total, nodes: nodeEls, H: H };
-    // The thread begins under the Work section's label, so it grows out of
-    // the first section marker instead of starting in empty space.
-    var firstTag = document.querySelector("#work .sec-tag");
+    // The thread begins under the first case's label (Work has no heading of
+    // its own), so it grows out of a marker instead of starting in empty space.
+    var firstTag = document.querySelector("#work .case-id");
     if (firstTag){
       var cut = Math.round(firstTag.getBoundingClientRect().bottom + window.pageYOffset + 8);
       thread.style.clipPath = "inset(" + cut + "px 0 0 0)";
