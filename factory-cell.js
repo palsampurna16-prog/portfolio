@@ -80,7 +80,12 @@ function pathPoint(pts, t){
   return a.map((v, k) => lerp(v, b[k], f));
 }
 
+// One model per page: a second call hands back the first instead of stacking
+// another canvas and label layer on the same stage.
+let instance = null;
+
 export function mount(){
+  if (instance) return instance;
   const wrap    = document.getElementById('cellWrap');
   const flat    = document.getElementById('cellFlat');
   const stage   = document.getElementById('cellStage');
@@ -989,8 +994,9 @@ export function mount(){
   }, { rootMargin: '0px 0px -15% 0px' }).observe(stage);
 
   // For checks and screenshots: jump past the build-in.
-  return {
+  instance = {
     finishBuild(){ build = 1; requestRender(); },
     jumpToStep(n){ setStep(n); stepF = n; shownRate = STEPS[n].rate; requestRender(); }
   };
+  return instance;
 }
