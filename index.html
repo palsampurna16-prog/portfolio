@@ -452,6 +452,207 @@ h1.crowd-bubble::after{
 .lit-in .w{ opacity:1; transform:none; transition: opacity 420ms var(--e-out), transform 420ms var(--e-out); }
 
 /* ============================================================
+   CELL INTRO — the factory cell, built by scrolling
+   Without script or WebGL this is a plain band: two lines and
+   a link. .is-3d is set before first paint (so the page never
+   jumps) when the model can be drawn. With it, .is-live makes
+   the section several screens tall and pins the stage, and
+   cell-scrub.js ties the model to the scroll position;
+   .is-still is the reduced-motion version: one screen, the
+   finished cell, nothing pinned.
+   ============================================================ */
+.scrub{
+  /* A studio with no walls, in the site's theme. The section has no ground of
+     its own and no rules around it: the page's paper and drafting grid run
+     straight through, and the floor, the light and the model fade out into
+     them at the top and bottom. The type takes the page's ink; only the model
+     keeps its colours. cell-scrub.js reads the floor and pool values to
+     paint the 3D floor. */
+  --scrub-ink: var(--ink); --scrub-dim: var(--slate); --scrub-calm: var(--sage);
+  --scrub-amber:#ff7a1a;
+  --scrub-ground: var(--paper);              /* the page itself: what everything fades into */
+  --scrub-ground-lit: var(--paper-raised);   /* a slight lift behind the model */
+  --scrub-floor:#191c20; --scrub-line: rgba(237,234,227,.16);
+  --scrub-pool:#ffb070; --scrub-pool-a:.30;  /* warm light on the floor */
+  --scrub-glow-cool: rgba(142,154,198,.20); --scrub-glow-warm: rgba(255,122,26,.13);
+  --scrub-halo: rgba(0,0,0,.7);              /* behind the title */
+  position:relative; z-index:2;
+  color: var(--scrub-ink);
+  scroll-margin-top: var(--bar-h);
+}
+:root[data-theme="light"] .scrub{
+  /* the floor is lit hard, so its paint is a good deal darker than it renders */
+  --scrub-floor:#99958c; --scrub-line: rgba(25,27,30,.34);
+  --scrub-pool:#ff9a3c; --scrub-pool-a:.20;
+  --scrub-glow-cool: rgba(70,83,138,.13); --scrub-glow-warm: rgba(255,122,26,.12);
+  --scrub-halo: rgba(245,243,238,.92);
+}
+.scrub-pin{
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap: 1.4rem; text-align:center;
+  padding: clamp(3.5rem, 9vw, 7rem) var(--gut);
+}
+/* No edges: the light and the stage both fade to nothing towards the top and
+   bottom of the section, so nothing is cut off where it meets the page. */
+.scrub-glow, .scrub-stage{
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 84%, transparent 100%);
+}
+/* Studio light: a slight lift behind the model, a cool glow from the upper
+   left and a warm one from the lower right, drifting slowly. */
+.scrub-glow{
+  position:absolute; inset:0; overflow:hidden; pointer-events:none;
+  background: radial-gradient(ellipse at 50% 44%, var(--scrub-ground-lit), transparent 66%);
+}
+.scrub-glow::before, .scrub-glow::after{
+  content:""; position:absolute; width:90vmax; height:90vmax; border-radius:50%;
+}
+.scrub-glow::before{
+  left:-34vmax; top:-46vmax;
+  background: radial-gradient(closest-side, var(--scrub-glow-cool), transparent);
+  animation: scrub-drift-cool 26s ease-in-out infinite alternate;
+}
+.scrub-glow::after{
+  right:-36vmax; bottom:-52vmax;
+  background: radial-gradient(closest-side, var(--scrub-glow-warm), transparent);
+  animation: scrub-drift-warm 34s ease-in-out infinite alternate;
+}
+@keyframes scrub-drift-cool{ to{ transform: translate3d(16vmax, 9vmax, 0) scale(1.12); } }
+@keyframes scrub-drift-warm{ to{ transform: translate3d(-18vmax, -8vmax, 0) scale(1.1); } }
+/* above the glow */
+.scrub-eyebrow, .scrub-title, .scrub-dock{ position:relative; z-index:1; }
+.scrub-eyebrow{ color: var(--scrub-dim); }
+.scrub-title h2{
+  font-size: var(--t-hero); line-height:1.02; letter-spacing:-0.035em;
+  text-shadow: 0 2px 34px var(--scrub-halo);
+}
+.scrub-tag p{
+  font-size: clamp(1.12rem, 0.92rem + 1vw, 1.62rem); font-weight:500;
+  line-height:1.25; letter-spacing:-0.02em; text-wrap:balance;
+}
+.scrub-tag a, .scrub-skip{
+  display:inline-block; color: var(--scrub-dim); text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb, var(--scrub-ink) 24%, transparent); padding-bottom:2px;
+  transition: color var(--d-1) var(--e-out), border-color var(--d-1) var(--e-out);
+}
+.scrub-tag a{ margin-top:.9rem; }
+.scrub-tag a:hover, .scrub-skip:hover{ color: var(--scrub-ink); border-bottom-color: var(--scrub-amber); }
+.scrub a:focus-visible{ outline-color: var(--scrub-amber); }
+/* These only mean something beside the model. */
+.scrub-stage, .scrub-hud, .scrub-mode, .scrub-note, .scrub-skip, .scrub-hint, .scrub-prog{ display:none; }
+
+/* ---- with the model ---- */
+.scrub.is-live{ height: 400vh; }
+.scrub.is-3d .scrub-pin{ display:block; padding:0; height:100vh; height:100svh; }
+.scrub.is-live .scrub-pin{ position:sticky; top:0; }
+.scrub.is-still .scrub-pin{ max-height: 54rem; }
+
+.scrub.is-3d .scrub-stage{ display:block; position:absolute; inset:0; }
+.scrub-stage canvas{ position:absolute; inset:0; width:100%; height:100%; display:block;
+  opacity:0; transition: opacity 700ms var(--e-out); }
+.scrub.has-cell .scrub-stage canvas{ opacity:1; }
+/* The type along the bottom sits on the page colour, not on the floor. */
+.scrub.is-3d .scrub-pin::after{
+  content:""; position:absolute; inset:auto 0 0 0; height:34%; pointer-events:none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--scrub-ground) 86%, transparent) 72%);
+}
+
+.scrub.is-3d .scrub-eyebrow{ position:absolute; z-index:2; left: var(--gut); top: calc(var(--bar-h) + 1.1rem); }
+.scrub.is-3d .scrub-title{
+  position:absolute; z-index:2; inset:0; display:grid; place-items:center;
+  padding: 0 var(--gut); pointer-events:none;
+}
+.scrub.is-3d .scrub-title h2{ will-change: transform, opacity; }
+/* Standing still, the title cannot fade out of the model's way, so it sits
+   above it at heading size. */
+.scrub.is-still .scrub-title{ place-items:start center; padding-top: calc(var(--bar-h) + 3.6rem); }
+.scrub.is-still .scrub-title h2{ font-size: var(--t-h2); }
+
+.scrub.is-3d .scrub-dock{
+  position:absolute; z-index:2; left: var(--gut); right: var(--gut); bottom: 1.7rem;
+  display:grid; grid-template-columns: 1fr minmax(0, 34rem) 1fr;
+  grid-template-areas: "hud tag skip"; align-items:end; gap: 1rem 1.5rem;
+}
+.scrub.is-3d .scrub-hud{
+  grid-area:hud; display:flex; flex-direction:column; gap:.3rem; text-align:left;
+  opacity:0; transition: opacity 400ms var(--e-out);
+}
+.scrub.is-3d .scrub-hud.on{ opacity:1; }
+.scrub-hud .val{
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: clamp(2.1rem, 1.3rem + 3vw, 3.9rem); line-height:.95; letter-spacing:-0.045em;
+  text-transform:none; transition: color 600ms var(--e-out);
+}
+.scrub-hud span, .scrub-skip{ white-space:nowrap; }
+.scrub-hud .unit{ color: var(--scrub-dim); }
+.scrub-hud .delta{ color: var(--scrub-dim); transition: color 600ms var(--e-out); }
+.scrub-hud.opt .val, .scrub-hud.opt .delta{ color: var(--scrub-calm); }
+.scrub.is-3d .scrub-tag{ grid-area:tag; will-change: transform, opacity; }
+/* The closing line starts out invisible; until it shows (.in), its link must
+   not be there to tab to or to catch a tap meant for the page. */
+.scrub.is-live .scrub-tag{ opacity:0; }
+.scrub.is-live .scrub-tag:not(.in) a{ visibility:hidden; }
+.scrub.is-3d .scrub-skip{ grid-area:skip; display:inline-block; justify-self:end; }
+.scrub.is-still .scrub-skip{ display:none; }
+
+.scrub.is-3d .scrub-mode{
+  display:block; position:absolute; z-index:2; right: var(--gut); top: calc(var(--bar-h) + 1.1rem);
+  color: var(--scrub-dim); text-align:right;
+}
+.scrub.is-3d .scrub-note{
+  display:block; position:absolute; z-index:2; left:0; top:0; white-space:nowrap; line-height:1;
+  font-size:.66rem; letter-spacing:.1em; color: var(--scrub-amber);
+  /* its own dark tab, so the orange reads on the deck and on a light floor alike */
+  padding:.38em .6em; background: rgba(10,12,15,.74);
+  opacity:0; pointer-events:none; will-change: transform;
+}
+.scrub.is-live .scrub-hint{
+  display:flex; flex-direction:column; align-items:center; gap:.55rem;
+  position:absolute; z-index:2; left:50%; bottom: 2.1rem; transform: translateX(-50%);
+  color: var(--scrub-dim); pointer-events:none;
+  transition: opacity 400ms var(--e-out);
+}
+.scrub-hint.gone{ opacity:0; }
+.scrub-hint svg{ animation: scrub-nudge 1.6s ease-in-out infinite; }
+@keyframes scrub-nudge{
+  0%, 100%{ transform: translateY(0); opacity:.5; }
+  50%{ transform: translateY(5px); opacity:1; }
+}
+/* Thin rule along the bottom: how far through the sequence the reader is. It
+   has no track, and cell-scrub.js fades it out as the sequence ends, so it
+   never sits there as a line between this section and the next. */
+.scrub.is-live .scrub-prog{
+  display:block; position:absolute; z-index:2; inset:auto 0 0 0; height:2px;
+}
+.scrub-prog i{
+  display:block; height:100%; background: var(--scrub-ink); opacity:.85;
+  transform: scaleX(0); transform-origin: left center;
+}
+/* An upright narrow screen stacks the dock: the closing line over the
+   readout. A phone also gets a shorter sequence. */
+@media (max-width: 860px) and (orientation: portrait){
+  .scrub.is-3d .scrub-dock{
+    grid-template-columns: 1fr auto; grid-template-areas: "tag tag" "hud skip"; bottom: 1.3rem;
+  }
+  .scrub.is-3d .scrub-tag{ text-align:left; }
+  .scrub.is-3d .scrub-mode{ top: calc(var(--bar-h) + 2.5rem); left: var(--gut); right:auto; text-align:left; }
+  .scrub.is-still .scrub-title{ padding-top: calc(var(--bar-h) + 5.4rem); }
+  .scrub.is-live .scrub-hint{ bottom: 5.4rem; }
+}
+@media (max-width: 720px){
+  .scrub.is-live{ height: 280vh; height: 280svh; }
+}
+/* A phone on its side has little height to share: smaller type in the dock,
+   so the model keeps the middle of the screen. */
+@media (max-height: 520px){
+  .scrub.is-3d .scrub-dock{ bottom: .9rem; }
+  .scrub-hud .val{ font-size: 1.9rem; }
+  .scrub.is-3d .scrub-tag p{ font-size: 1.02rem; }
+  .scrub.is-3d .scrub-tag a{ margin-top: .45rem; }
+}
+
+/* ============================================================
    TIMELINE (experience) — process rail with duration bars
    ============================================================ */
 .tl{ display:flex; flex-direction:column; }
@@ -490,7 +691,7 @@ h1.crowd-bubble::after{
 /* ============================================================
    CASE STUDIES
    ============================================================ */
-.case{ position:relative; padding: clamp(2.4rem,5vw,4rem) 0; }
+.case{ position:relative; padding: clamp(2.4rem,5vw,4rem) 0; scroll-margin-top: var(--bar-h); }
 .case + .case{ border-top:1px solid var(--rule); }
 
 .case-top{
@@ -549,6 +750,9 @@ h1.crowd-bubble::after{
 .results dd{ margin:0; font-size: clamp(1.5rem,1.15rem + 1.3vw,2.15rem); letter-spacing:-0.035em; line-height:1; font-family:var(--mono); font-variant-numeric: tabular-nums; }
 .results dd small{ font-size:.44em; letter-spacing:.06em; color: var(--slate); margin-left:.35em; }
 .results .accent dd{ color: var(--sage); }
+/* A case with no figure: the strip follows the text, so it needs the gap a
+   figure would have given it. */
+.case-top + .results{ margin-top: clamp(1.8rem, 3.5vw, 3rem); }
 
 /* ============================================================
    DIAGRAM STYLING (shared)
@@ -745,92 +949,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
    REDUCED MOTION — everything resolves to its final state
    ============================================================ */
 
-/* ============================================================
-   FIG 2.3 - INTERACTIVE CELL
-   A 3D model (factory-cell.js) replaces the flat material-flow
-   drawing when the browser can render it. The SVG stays as the
-   fallback for no-JS and no-WebGL.
-   ============================================================ */
-/* `.figure svg.dg{display:block}` outranks the browser's [hidden] rule, so
-   the flat fallback kept rendering under the canvas even when hidden. This
-   puts it back under our control. */
-.figure svg.dg[hidden]{ display:none; }
-
-.cell-stage{
-  position:relative; overflow:hidden;
-  /* The model is always shown on its own dark ground, in both site themes:
-     dark metal with orange accents needs black behind it to read. The cap
-     keeps the model plus its controls inside one screen at 100% zoom. */
-  aspect-ratio:2.1/1;
-  min-height:280px;
-  max-height:min(58vh, 520px);
-  background: radial-gradient(ellipse at 50% 46%, #14181d 0%, #0a0c0f 55%, #050607 100%);
-  touch-action:none; cursor:grab;
-}
-.cell-stage:active{ cursor:grabbing; }
-.cell-stage canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; outline:none; }
-
-.cell-hint{ position:absolute; left:.7rem; bottom:.6rem; color:#7f868e; pointer-events:none;
-  transition:opacity 500ms var(--e-out); }
-.cell-hint.gone{ opacity:0; }
-
-/* Callouts are HTML laid over the model: a row of names along the top with
-   a dashed leader down to each component. */
-.cell-labels{ position:absolute; inset:0; pointer-events:none; overflow:hidden;
-  font-size:.66rem; letter-spacing:.1em; }
-.cell-lab{ position:absolute; left:0; top:0; white-space:nowrap; line-height:1;
-  color:#a3aab2; will-change:transform; transition:opacity 300ms var(--e-out); }
-.cell-lab.hot{ color:#ff7a1a; }
-.cell-lead{ position:absolute; left:0; top:0; width:0; display:block;
-  border-left:1px dashed rgba(163,170,178,.34); will-change:transform;
-  transition:opacity 300ms var(--e-out); }
-/* On a phone the stage takes the full column width at a squarer shape, and
-   the step buttons share one row instead of running off the edge. */
-@media (max-width:720px){
-  .cell-stage{ aspect-ratio:auto; height:min(72vw, 320px); min-height:0; max-height:none; }
-  .cell-labels{ font-size:.58rem; letter-spacing:.06em; }
-  .cell-controls .cell-seg{ display:flex; width:100%; }
-  .cell-controls .cell-seg button{ flex:1 1 0; min-width:0; padding:.55rem .2rem; letter-spacing:.04em; font-size:.66rem; line-height:1.3; }
-  .cell-controls .cell-spacer{ display:none; }
-  .cell-controls .cell-ctl-label{ flex-basis:100%; margin-right:0; }
-}
-
-/* The readout sits in its own column beside the drawing, so the callout
-   labels along the top of the stage can never run underneath it. */
-.cell-top{ display:grid; grid-template-columns:minmax(0,1fr) 11rem; column-gap:1.2rem; align-items:start; }
-.cell-readout{ text-align:right; padding-top:.2rem;
-  display:flex; flex-direction:column; gap:.3rem; }
-@media (max-width:720px){
-  .cell-top{ grid-template-columns:minmax(0,1fr); }
-  .cell-readout{ order:-1; flex-direction:row; flex-wrap:wrap; align-items:baseline; gap:.2rem .7rem;
-    text-align:left; padding:0 0 .7rem; }
-}
-.cell-readout .val{ font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:clamp(1.6rem,1rem + 2.2vw,2.7rem); line-height:1; letter-spacing:-0.04em;
-  color:var(--ink); transition:color 600ms var(--e-out); }
-.cell-readout.opt .val{ color:var(--sage); }
-.cell-readout .unit{ color:var(--slate); }
-.cell-readout .delta{ color:var(--slate-2); transition:color 600ms var(--e-out); }
-.cell-readout.opt .delta{ color:var(--sage); }
-
-.cell-controls{ display:flex; flex-wrap:wrap; gap:.7rem .9rem; align-items:center;
-  margin-top:.9rem; padding-top:.9rem; border-top:1px solid var(--rule); }
-.cell-ctl-label{ color:var(--slate); margin-right:-.3rem; }
-.cell-spacer{ flex:1; min-width:8px; }
-.cell-seg{ display:inline-flex; border:1px solid var(--rule-2); background:var(--paper-raised); }
-.cell-seg button{ font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em;
-  text-transform:uppercase; padding:.52rem .8rem; background:transparent; color:var(--slate);
-  border:0; cursor:pointer; transition:color 200ms var(--e-out), background 200ms var(--e-out); }
-.cell-seg button + button{ border-left:1px solid var(--rule-2); }
-.cell-seg button:hover{ color:var(--ink-2); }
-.cell-seg button[aria-pressed="true"]{ background:#ff7a1a; color:#1d1407; }
-.cell-ghost{ font-family:var(--mono); font-size:var(--t-mono); letter-spacing:.11em;
-  text-transform:uppercase; padding:.52rem .8rem; background:transparent; color:var(--slate);
-  border:1px solid var(--rule-2); cursor:pointer;
-  transition:color 200ms var(--e-out), border-color 200ms var(--e-out); }
-.cell-ghost:hover{ color:var(--ink); border-color:var(--slate-2); }
-.cell-mode{ margin-top:.75rem; color:var(--slate); }
-
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{
     animation-duration: 1ms !important;
@@ -841,6 +959,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
   .rv{ opacity:1; transform:none; }
   .w{ opacity:1; transform:none; }
   .crowd.crowd-go .crowd-me, .crowd.crowd-go h1.crowd-bubble{ animation:none; }
+  .scrub-hint svg, .scrub-glow::before, .scrub-glow::after{ animation:none; }
   #hero .hero-lede.rv, #hero .hero-meta.rv{ transition-delay:0s; }
   .ml-in{ transform:none; }
   .lr > span{ transform:none !important; }
@@ -946,6 +1065,50 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 </section>
 
 <!-- ============================================================
+     THE CELL OPENS — Case 01's factory cell, built by scrolling.
+     Not a station on the thread: the thread passes behind it
+     (data-thread-bridge) and comes out under the Work label.
+     ============================================================ -->
+<section class="scrub" id="cell-intro" aria-labelledby="cellIntroTitle" data-thread-bridge>
+  <div class="scrub-pin">
+    <div class="scrub-glow" aria-hidden="true"></div>
+    <div class="scrub-stage" aria-hidden="true"></div>
+    <p class="scrub-eyebrow mono">Case 01 · Factory cell simulation</p>
+    <div class="scrub-title"><h2 id="cellIntroTitle">Model it.<br>Find the constraint.</h2></div>
+    <p class="scrub-mode mono" aria-hidden="true"></p>
+    <p class="scrub-note mono" aria-hidden="true">Constraint · manual operations</p>
+    <div class="scrub-dock">
+      <div class="scrub-hud mono" aria-hidden="true">
+        <span class="val">55</span>
+        <span class="unit">Units / hour</span>
+        <span class="delta">Baseline</span>
+      </div>
+      <div class="scrub-tag">
+        <p>55 to 130 units an hour. The machines were never touched.</p>
+        <a class="mono" href="#case-sim">Read the case <span aria-hidden="true">&darr;</span></a>
+      </div>
+      <a class="scrub-skip mono" href="#work">Skip to work <span aria-hidden="true">&darr;</span></a>
+    </div>
+    <div class="scrub-hint mono" aria-hidden="true">
+      <span>Scroll</span>
+      <svg width="14" height="18" viewBox="0 0 14 18"><path d="M7 1V17M2 12l5 5 5-5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="scrub-prog" aria-hidden="true"><i></i></div>
+  </div>
+  <script>
+  /* Decide the section's shape before first paint: pinned and several screens
+     tall when the model can be drawn, one still screen for reduced motion,
+     and the plain band otherwise. */
+  (function(){
+    var sec = document.getElementById("cell-intro");
+    if (!window.WebGLRenderingContext || !("IntersectionObserver" in window) || !("ResizeObserver" in window)) return;
+    var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    sec.classList.add("is-3d", still ? "is-still" : "is-live");
+  })();
+  </script>
+</section>
+
+<!-- ============================================================
      02 · WORK
      ============================================================ -->
 <section class="sec" id="work" data-station="Case studies" data-thread="0.72">
@@ -954,14 +1117,33 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       <div class="sec-tag mono"><i></i>ST.02 / Work</div>
       <div>
         <h2>Four projects, measured.</h2>
-        <p class="sub">A live certification cohort at SkillCat, then three graded M.Sc. projects: packaging for 400 ABB switch models, a simulated factory cell, and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
+        <p class="sub">A simulated factory cell from my M.Sc., a live certification cohort at SkillCat, then two more graded M.Sc. projects: packaging for 400 ABB switch models and a crisis-response model with no probabilities to work from. Different domains, same method: model it, find the constraint, change the constraint, measure again.</p>
       </div>
     </div>
 
-    <!-- ---- CASE 1 : SKILLMAP TRACKER ---- -->
+    <!-- ---- CASE 1 : FACTORY CELL ---- -->
+    <article class="case" id="case-sim">
+      <div class="case-top">
+        <div class="case-id mono"><b>Case 01</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
+        <div>
+          <h3>Factory cell production simulation</h3>
+          <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
+          <p class="body">I built a complete 3D factory cell in Visual Components &mdash; warehouse shelf, twin conveyors, vertical mill, coordinate measuring machine, articulated robot and manual assembly &mdash; then ran it for an hour and measured output at the sink. The first run gave 55 units per hour, and the constraint was not a machine: one operator was busy almost continuously while parts queued on the conveyors and the robot sat idle inside the fence. A second operator took it to 89, a second manual workstation to 100, and a third operator with reordered transport priorities to 130. The mill, the CMM and the robot were never touched.</p>
+        </div>
+      </div>
+
+      <dl class="results">
+        <div><dt class="mono">Baseline</dt><dd><span class="num">55</span> <small>units/h</small></dd></div>
+        <div class="accent"><dt class="mono">After iteration 3</dt><dd><span class="num">130</span> <small>units/h</small></dd></div>
+        <div><dt class="mono">Improvement</dt><dd><span class="num">136</span><small>%</small></dd></div>
+        <div><dt class="mono">Documentation</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">35-page technical report, on request</dd></div>
+      </dl>
+    </article>
+
+    <!-- ---- CASE 2 : SKILLMAP TRACKER ---- -->
     <article class="case" id="case-cohort">
       <div class="case-top">
-        <div class="case-id mono"><b>Case 01</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
+        <div class="case-id mono"><b>Case 02</b>Built at SkillCat<br>Google Sheets<br>+ Apps Script</div>
         <div>
           <h3>SkillMap Cohort 1 Tracker</h3>
           <div class="ctx mono">79 candidates · 10-week HVAC certification · weekly risk triage</div>
@@ -1089,7 +1271,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     <!-- ---- CASE 3 : ABB PACKAGING ---- -->
     <article class="case" id="case-abb">
       <div class="case-top">
-        <div class="case-id mono"><b>Case 02</b>TUTA3240<br>Supply Chain Design<br>Grade 5 / 5</div>
+        <div class="case-id mono"><b>Case 03</b>TUTA3240<br>Supply Chain Design<br>Grade 5 / 5</div>
         <div>
           <h3>ABB Hurricane packaging optimisation</h3>
           <div class="ctx mono">400 SKUs · 30+ box types · Individual project · Industry brief from ABB</div>
@@ -1165,142 +1347,6 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </dl>
     </article>
 
-    <!-- ---- CASE 2 : FACTORY CELL ---- -->
-    <article class="case" id="case-sim">
-      <div class="case-top">
-        <div class="case-id mono"><b>Case 03</b>ISAN3110<br>Modelling &amp; Simulation<br>Grade 5 / 5</div>
-        <div>
-          <h3>Factory cell production simulation</h3>
-          <div class="ctx mono">VisualComponents · Human-robot collaboration · University of Vaasa</div>
-          <p class="body">I built a complete 3D factory cell in Visual Components &mdash; warehouse shelf, twin conveyors, vertical mill, coordinate measuring machine, articulated robot and manual assembly &mdash; then ran it for an hour and measured output at the sink. The first run gave 55 units per hour, and the constraint was not a machine: one operator was busy almost continuously while parts queued on the conveyors and the robot sat idle inside the fence. A second operator took it to 89, a second manual workstation to 100, and a third operator with reordered transport priorities to 130. The mill, the CMM and the robot were never touched.</p>
-        </div>
-      </div>
-
-      <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 2.3 / Material flow, baseline vs iteration 3 <span class="grow"></span> <span>Units per hour</span></div>
-        <div class="figure-body">
-          <div id="cellWrap" hidden>
-            <div class="cell-top">
-              <div class="cell-main">
-                <div class="cell-stage" id="cellStage">
-                  <div class="cell-hint mono" id="cellHint">Drag to rotate</div>
-                </div>
-              </div>
-              <div class="cell-readout mono" id="cellReadout">
-                <span class="val" id="cellRate">55</span>
-                <span class="unit">Units / hour</span>
-                <span class="delta" id="cellDelta">Baseline</span>
-              </div>
-            </div>
-            <div class="cell-controls">
-              <span class="cell-ctl-label mono">Optimisation step</span>
-              <div class="cell-seg" role="group" aria-label="Optimisation step">
-                <button type="button" class="cell-stepb" data-step="0" aria-pressed="true">Baseline</button>
-                <button type="button" class="cell-stepb" data-step="1" aria-pressed="false">2 operators</button>
-                <button type="button" class="cell-stepb" data-step="2" aria-pressed="false">+ station</button>
-                <button type="button" class="cell-stepb" data-step="3" aria-pressed="false">3 operators</button>
-              </div>
-              <span class="cell-spacer"></span>
-              <button type="button" class="cell-ghost" id="cellView">Top view</button>
-              <button type="button" class="cell-ghost" id="cellReplay">Replay build</button>
-            </div>
-            <p class="cell-mode mono" id="cellMode">Baseline &middot; one operator</p>
-          </div>
-
-          <svg id="cellFlat" class="dg" viewBox="0 0 920 552" role="img" aria-label="Diagram comparing the baseline factory cell, where one operator at the manual station is the constraint and the robot sits idle, with the optimised cell running three operators across two parallel manual stations, and throughput bars showing 55, 89, 100 and 130 units per hour, a 136 percent improvement.">
-            <!-- BASELINE -->
-            <text class="fd" x="20" y="24">BASELINE CONFIGURATION</text>
-            <path class="ln thin dw" d="M20 34 H 900"/>
-
-            <!-- the constraint is the manual station, not a machine -->
-            <path class="ln-in dw" d="M780 52 L 768 66 M780 52 L 792 66"/>
-            <text class="fd lbl-in" x="756" y="60" text-anchor="end">CONSTRAINT &#183; MANUAL OPERATIONS</text>
-
-            <g class="hot"><rect class="st dw nd" x="20"  y="76" width="112" height="42"/><text class="fd lbl-ink" x="32" y="102">SHELF</text></g>
-            <g class="hot"><rect class="st dw nd" x="196" y="76" width="112" height="42"/><text class="fd lbl-ink" x="208" y="102">INFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="372" y="76" width="112" height="42"/><text class="fd lbl-ink" x="384" y="102">ROBOT CELL</text></g>
-            <g class="hot"><rect class="st dw nd" x="548" y="76" width="112" height="42"/><text class="fd lbl-ink" x="560" y="102">OUTFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="724" y="76" width="112" height="42"/><text class="fd lbl-ink" x="736" y="96">MANUAL</text><text class="fd lbl-ink" x="736" y="110">STATION</text></g>
-
-            <path class="ln dashed dw" d="M132 97 H 196"/>
-            <path class="ln dashed dw" d="M308 97 H 372"/>
-            <path class="ln dashed dw" d="M484 97 H 548"/>
-            <path class="ln dashed dw" d="M660 97 H 724"/>
-            <path class="ln dw" d="M836 97 H 890"/>
-
-            <!-- work piles up behind the operator; the robot waits -->
-            <g class="fd">
-              <circle class="fillsl" cx="674" cy="132" r="2.6"/><circle class="fillsl" cx="686" cy="132" r="2.6"/>
-              <circle class="fillsl" cx="698" cy="132" r="2.6"/><circle class="fillsl" cx="710" cy="132" r="2.6"/>
-              <text x="674" y="150">QUEUE</text>
-            </g>
-            <text class="fd" x="384" y="150">ROBOT IDLE</text>
-            <text class="fd lbl-in" x="836" y="150" text-anchor="end">1 OPERATOR</text>
-
-            <!-- divider -->
-            <path class="ln thin dashed dw" d="M20 200 H 900"/>
-            <text class="fd" x="20" y="192">OPTIMISED &#183; 3 OPERATORS, 2 MANUAL STATIONS</text>
-
-            <!-- OPTIMISED -->
-            <g class="hot"><rect class="st dw nd" x="20"  y="250" width="112" height="42"/><text class="fd lbl-ink" x="32" y="276">SHELF</text></g>
-            <g class="hot"><rect class="st dw nd" x="196" y="250" width="112" height="42"/><text class="fd lbl-ink" x="208" y="276">INFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="372" y="250" width="112" height="42"/><text class="fd lbl-ink" x="384" y="276">ROBOT CELL</text></g>
-            <g class="hot"><rect class="st dw nd" x="548" y="250" width="112" height="42"/><text class="fd lbl-ink" x="560" y="276">OUTFEED</text></g>
-            <g class="hot"><rect class="st dw nd" x="724" y="220" width="112" height="38"/><text class="fd lbl-sg" x="736" y="244">STATION A</text></g>
-            <g class="hot"><rect class="st dw nd" x="724" y="284" width="112" height="38"/><text class="fd lbl-sg" x="736" y="308">STATION B</text></g>
-
-            <path class="ln-sg dw" d="M132 271 H 196"/>
-            <path class="ln-sg dw" d="M308 271 H 372"/>
-            <path class="ln-sg dw" d="M484 271 H 548"/>
-            <path class="ln-sg dw" d="M660 271 H 692 L 692 239 H 724"/>
-            <path class="ln-sg dw" d="M660 271 H 692 L 692 303 H 724"/>
-            <path class="ln-sg dw" d="M836 239 H 868 L 868 271 H 900"/>
-            <path class="ln-sg dw" d="M836 303 H 868 L 868 271 H 900"/>
-
-            <text class="fd lbl-sg" x="484" y="340">STAFFING RAISED &#183; CONSTRAINT REMOVED</text>
-
-            <!-- throughput, all four measured states -->
-            <path class="ln thin dw" d="M20 372 H 900"/>
-            <text class="fd" x="20" y="396">THROUGHPUT &#183; UNITS PER HOUR</text>
-
-            <text class="fd" x="20" y="425">BASELINE</text>
-            <rect class="fillsl fd" x="200" y="418" width="279" height="8"/>
-            <text class="fd lbl-ink" x="489" y="426">55</text>
-
-            <text class="fd" style="--dl:180ms" x="20" y="449">+2ND OPERATOR</text>
-            <rect class="fillsl fd" style="--dl:180ms" x="200" y="442" width="452" height="8"/>
-            <text class="fd lbl-ink" style="--dl:180ms" x="662" y="450">89</text>
-
-            <text class="fd" style="--dl:340ms" x="20" y="473">+2ND STATION</text>
-            <rect class="fillsl fd" style="--dl:340ms" x="200" y="466" width="508" height="8"/>
-            <text class="fd lbl-ink" style="--dl:340ms" x="718" y="474">100</text>
-
-            <text class="fd" style="--dl:500ms" x="20" y="497">+3RD OPERATOR</text>
-            <rect class="fillsg fd" style="--dl:500ms" x="200" y="490" width="660" height="8"/>
-            <text class="fd lbl-sg" style="--dl:500ms" x="870" y="498">130</text>
-
-            <path class="ln-in dw" style="--dl:700ms" d="M479 504 V 516 M860 504 V 516"/>
-            <path class="ln-in dw" style="--dl:820ms" d="M479 522 H 860"/>
-            <text class="fd lbl-in" style="--dl:900ms" x="670" y="540" text-anchor="middle">+136%</text>
-
-            <!-- pulses: slow and stalled at baseline, quick once staffed -->
-            <path class="flow" style="--sp:6.5s" d="M132 97 H 196"/>
-            <path class="flow" style="--sp:6.5s;--dl:1100ms" d="M660 97 H 724"/>
-            <path class="flow" style="--sp:3.1s" d="M132 271 H 196"/>
-            <path class="flow" style="--sp:3.1s;--dl:600ms" d="M660 271 H 692 L 692 239 H 724"/>
-            <path class="flow" style="--sp:3.1s;--dl:1200ms" d="M660 271 H 692 L 692 303 H 724"/>
-          </svg>
-        </div>
-      </div>
-
-      <dl class="results">
-        <div><dt class="mono">Baseline</dt><dd><span class="num">55</span> <small>units/h</small></dd></div>
-        <div class="accent"><dt class="mono">After iteration 3</dt><dd><span class="num">130</span> <small>units/h</small></dd></div>
-        <div><dt class="mono">Improvement</dt><dd><span class="num">136</span><small>%</small></dd></div>
-        <div><dt class="mono">Documentation</dt><dd style="font-size:.95rem;font-family:var(--sans);letter-spacing:-0.01em;line-height:1.4">35-page technical report, on request</dd></div>
-      </dl>
-    </article>
-
     <!-- ---- CASE 4 : SCENARIO PLANNING ---- -->
     <article class="case" id="case-scenario">
       <div class="case-top">
@@ -1314,7 +1360,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       </div>
 
       <div class="figure">
-        <div class="figure-head mono"><span class="dot"></span> Fig. 2.4 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
+        <div class="figure-head mono"><span class="dot"></span> Fig. 2.3 / Decision rules and sweep result <span class="grow"></span> <span>300 × 300 sweep</span></div>
         <div class="figure-body">
           <svg class="dg" viewBox="0 0 920 400" role="img" aria-label="Diagram of four policy alternatives, minimal restrictions, testing and quarantine, border closure and internal lockdown, feeding a common bus into two decision rules, Hurwicz with an optimism coefficient and expected value with a containment probability, whose combined result was swept across a 300 by 300 grid. Testing and quarantine is optimal across the widest range; minimal restrictions win only when containment is likely and the decision-maker is optimistic; internal lockdown only when containment is unlikely and the decision-maker is pessimistic.">
             <text class="fd" x="20" y="24">FOUR POLICY ALTERNATIVES · MINISTRY OF HEALTH AND WELLBEING</text>
@@ -1783,11 +1829,21 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     thread.appendChild(g);
 
     // Two anchors per section at its hardcoded x fraction — the original wander.
-    var pts = [], stations = [];
+    var pts = [], stations = [], bridged = 0;
     sections.forEach(function(sec){
       var fx = parseFloat(sec.getAttribute("data-thread"));
       var rect = sec.getBoundingClientRect();
       var top = rect.top + window.pageYOffset;
+      // A bridge (the cell intro) is a tall band between two stations that the
+      // thread has no business in. The line drops straight down behind it and
+      // only then starts its curve, from the height it would have started at
+      // with no band there, so it still comes out under the next label.
+      var bridge = sec.previousElementSibling;
+      if (pts.length && bridge && bridge.hasAttribute("data-thread-bridge")){
+        var drop = bridge.getBoundingClientRect().height, above = pts[pts.length - 1];
+        pts.push({ x: above.x, y: above.y + drop });
+        bridged += drop;
+      }
       var x = Math.round(clamp(fx, 0.06, 0.94) * W);
       var y1 = top + rect.height * 0.22;
       var y2 = top + rect.height * 0.80;
@@ -1910,7 +1966,8 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
       for (var pz = 0; pz < 3; pz++){
         var pl = svgEl("path", { d:d, class:"t-pulse" });
         pl.style.setProperty("--len", Math.ceil(total) + "px");
-        pl.style.setProperty("--sp", speeds[pz] + "s");
+        // the hidden drop behind a bridge adds length, not pace
+        pl.style.setProperty("--sp", (speeds[pz] * total / Math.max(1, total - bridged)).toFixed(2) + "s");
         pl.style.setProperty("--dl", delays[pz] + "ms");
         g.appendChild(pl);
       }
@@ -2201,24 +2258,26 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
 <script src="hero-crowd.js" defer></script>
 
 <script>
-/* Fig. 2.3 - the factory cell. The 3D model and three.js are fetched only
-   when the figure is about to scroll into view. If the browser has no WebGL
-   or the module fails to load, the flat drawing already in the page stays. */
+/* The cell intro. Fetched as the section comes within a screen of the
+   viewport, which on most windows is straight after load. If the module or
+   WebGL fails, the section drops back to its plain band. */
 (function(){
-  var fig = document.querySelector('#case-sim .figure');
-  if (!fig || !('IntersectionObserver' in window) || !window.WebGLRenderingContext) return;
+  var sec = document.getElementById('cell-intro');
+  if (!sec || !sec.classList.contains('is-3d')) return;
   var io = new IntersectionObserver(function(entries){
     if (!entries[0].isIntersecting) return;
     io.disconnect();
-    import('./factory-cell.js')
+    import('./cell-scrub.js')
       .then(function(m){ m.mount(); })
       .catch(function(){
-        document.getElementById('cellWrap').hidden = true;
-        document.getElementById('cellFlat').removeAttribute('hidden');
+        sec.classList.remove('is-3d', 'is-live', 'is-still');
+        // the page just got several screens shorter: let the thread re-measure
+        window.dispatchEvent(new Event('resize'));
       });
-  }, { rootMargin: '900px 0px' });
-  io.observe(fig);
+  }, { rootMargin: '100% 0px' });
+  io.observe(sec);
 })();
 </script>
+
 </body>
 </html>

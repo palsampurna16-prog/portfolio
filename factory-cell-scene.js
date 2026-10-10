@@ -1,8 +1,10 @@
 /* ============================================================
-   Fig. 2.3 - the ISAN3110 factory cell as a solid 3D model.
+   The ISAN3110 factory cell as a solid 3D model: the scene itself.
 
-   Loaded on demand by index.html when the figure nears the viewport.
-   Everything is procedural three.js: no model files, no images.
+   cell-scrub.js draws it: the pinned chapter after the hero, where the
+   scroll position builds the cell. That file decides how the camera moves
+   and what sets the state; this one only knows the cell. Everything is
+   procedural three.js: no model files, no images.
 
    Plan coordinates (x = left/right, z = front/back) and component sizes are
    traced from Fig. 23, Fig. 32 and Fig. 37 of the ISAN3110 final report, the
@@ -13,13 +15,15 @@
    is modelled from the report.
    ============================================================ */
 // The ?v= number is the bundle's version: bump it whenever the bundle is
-// rebuilt, because vercel.json lets browsers cache /vendor for a year.
+// rebuilt, because vercel.json lets browsers cache /vendor for a year. Every
+// file that imports three must use the same URL, or the browser loads it twice.
 import * as THREE from './vendor/three.bundle.min.js?v=1';
 
-const { OrbitControls, RoundedBoxGeometry, RoomEnvironment } = THREE;
+const { RoundedBoxGeometry, RoomEnvironment } = THREE;
+
 
 /* ---------- the real cell, from the report ---------- */
-const MACHINES = {
+export const MACHINES = {
   shelf:   { x:-248, z:-92, w:46,  h:92,  d:118, label:'Warehouse shelf' },
   convIn:  { x:-24,  z:-30, w:250, h:20,  d:24,  label:'Infeed' },
   convOut: { x:-24,  z: 26, w:250, h:20,  d:24,  label:'Outfeed' },
@@ -30,13 +34,13 @@ const MACHINES = {
   ws2:     { x:-124, z:206, w:86,  h:38,  d:54,  label:'Station 2', added:true },
   sink:    { x:-272, z:186, w:40,  h:16,  d:40,  label:'Sink' }
 };
-const ORDER = ['shelf', 'convIn', 'convOut', 'mill', 'robot', 'cmm', 'fence', 'ws1', 'ws2', 'sink'];
+export const ORDER = ['shelf', 'convIn', 'convOut', 'mill', 'robot', 'cmm', 'fence', 'ws1', 'ws2', 'sink'];
 
 /* safety fence around the robot cell (Fig. 37) */
 const FENCE = { x0:96, x1:288, z0:-158, z1:154, h:56 };
 
 /* the four measured states, report pp.32-34 */
-const STEPS = [
+export const STEPS = [
   { rate:55,  name:'Baseline · one operator' },
   { rate:89,  name:'Second operator added' },
   { rate:100, name:'Second manual workstation added' },
@@ -68,10 +72,10 @@ const HUMAN = [
   [-184, 132], [-184, 206], [-238, 186], [-212, -92]
 ];
 
-const lerp = (a, b, t) => a + (b - a) * t;
-const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+export const lerp = (a, b, t) => a + (b - a) * t;
+export const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
 const ease = t => t <= 0 ? 0 : t >= 1 ? 1 : 1 - Math.pow(1 - t, 3);
-const smooth = t => { t = clamp01(t); return t * t * (3 - 2 * t); };
+export const smooth = t => { t = clamp01(t); return t * t * (3 - 2 * t); };
 
 function pathPoint(pts, t){
   const seg = (pts.length - 1) * Math.min(0.9999, Math.max(0, t));
@@ -80,57 +84,56 @@ function pathPoint(pts, t){
   return a.map((v, k) => lerp(v, b[k], f));
 }
 
-// One model per page: a second call hands back the first instead of stacking
-// another canvas and label layer on the same stage.
-let instance = null;
+export function rateAt(f){
+  f = Math.max(0, Math.min(STEPS.length - 1, f));
+  const i = Math.min(STEPS.length - 2, Math.floor(f));
+  return lerp(STEPS[i].rate, STEPS[i + 1].rate, clamp01(f - i));
+}
 
-export function mount(){
-  if (instance) return instance;
-  const wrap    = document.getElementById('cellWrap');
-  const flat    = document.getElementById('cellFlat');
-  const stage   = document.getElementById('cellStage');
-  const hint    = document.getElementById('cellHint');
-  const rateEl  = document.getElementById('cellRate');
-  const readout = document.getElementById('cellReadout');
-  const modeEl  = document.getElementById('cellMode');
-  const deltaEl = document.getElementById('cellDelta');
-  const bView   = document.getElementById('cellView');
-  const bReplay = document.getElementById('cellReplay');
-  const stepBtns = Array.from(document.querySelectorAll('.cell-stepb'));
-
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // The stage needs a real size before the renderer is created.
-  wrap.hidden = false;
-  if (flat) flat.setAttribute('hidden', '');
-
-  let renderer;
-  try {
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  } catch (err) {
-    wrap.hidden = true;
-    if (flat) flat.removeAttribute('hidden');
-    throw err;
+/* ---------- framing ---------- */
+const probe = new THREE.Vector3();
+function extent(camera, corners, target, dir, d){
+  camera.position.copy(target).addScaledVector(dir, d);
+  camera.lookAt(target);
+  camera.updateMatrixWorld();
+  let ex = 0, y0 = Infinity, y1 = -Infinity;
+  for (const c of corners){
+    probe.copy(c).project(camera);
+    ex = Math.max(ex, Math.abs(probe.x));
+    y0 = Math.min(y0, probe.y);
+    y1 = Math.max(y1, probe.y);
   }
+  return { ex, half: (y1 - y0) / 2, mid: (y1 + y0) / 2 };
+}
+// Fit: the distance at which everything fills a W x H stage from a direction,
+// and how far the picture then has to shift (in pixels) to sit centred
+// between a top and a bottom inset. The shift is meant for a view offset, so
+// the orbit centre stays put. Moves the camera and clears its view offset.
+export function frameCell(camera, corners, target, dir, W, H, topPx, bottomPx, fitX = 0.96){
+  camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+  const top = 1 - 2 * topPx / H, bottom = -1 + 2 * bottomPx / H;
+  const fitY = Math.max(0.3, (top - bottom) / 2), centreY = (top + bottom) / 2;
+  let d = 30;
+  for (let pass = 0; pass < 5; pass++){
+    const e = extent(camera, corners, target, dir, d);
+    d *= Math.max(e.ex / fitX, e.half / fitY);
+  }
+  return { d, off: (centreY - extent(camera, corners, target, dir, d).mid) * H / 2 };
+}
 
-  const sizeOf = () => {
-    const r = stage.getBoundingClientRect();
-    return [Math.max(1, Math.round(r.width)), Math.max(1, Math.round(r.height))];
-  };
-  let [W, H] = sizeOf();
-
+/* Builds one cell for one renderer. `sim` is the whole state: set it, call
+   advance(dt) to let the line run, then apply() to pose the scene. */
+export function createCell(renderer, { reduce = false, shadowSize = 2048 } = {}){
+  // the look the lights and materials below were tuned for
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, W < 700 ? 1.5 : 1.75));
-  renderer.setSize(W, H, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
-  stage.insertBefore(renderer.domElement, stage.firstChild);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
 
   /* ---------- light ---------- */
   const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment();
@@ -142,7 +145,7 @@ export function mount(){
   const key = new THREE.DirectionalLight(0xfff1d8, 4);
   key.position.set(-6, 14, 9);
   key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.set(shadowSize, shadowSize);
   Object.assign(key.shadow.camera, { left:-12, right:12, top:10, bottom:-10, near:0.5, far:40 });
   key.shadow.normalBias = 0.035;
   key.shadow.bias = -0.0002;
@@ -579,6 +582,25 @@ export function mount(){
     return line;
   });
 
+  /* the plan: each baseline footprint and the fence line, drawn on the deck
+     for a view that opens from the drawing. Hidden unless sim.plan is set. */
+  const planMat = new THREE.LineBasicMaterial({ color: 0xd9d8cd, transparent: true, opacity: 0 });
+  const plan = new THREE.LineSegments(new THREE.BufferGeometry(), planMat);
+  {
+    const pts = [];
+    const outline = (x0, z0, x1, z1) => {
+      const c = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]].map(q => new THREE.Vector3(wx(q[0]), 0.008, wz(q[1])));
+      c.forEach((corner, i) => pts.push(corner, c[(i + 1) % 4]));
+    };
+    for (const m of Object.values(MACHINES)){
+      if (!m.added) outline(m.x - m.w / 2, m.z - m.d / 2, m.x + m.w / 2, m.z + m.d / 2);
+    }
+    outline(FENCE.x0, FENCE.z0, FENCE.x1, FENCE.z1);
+    plan.geometry.setFromPoints(pts);
+    plan.visible = false;
+    cell.add(plan);
+  }
+
   /* parts in flow */
   const PARTS = Array.from({ length: 26 }, (_, i) => ({ t: i / 26, slot: i / 26, branch: i % 2 }));
   const partMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.085, 0.085, 0.12, 14), M.amber, PARTS.length);
@@ -603,36 +625,27 @@ export function mount(){
   });
 
   /* ---------- state ---------- */
-  let stepF = 0, stepTarget = 0;
-  let build = reduce ? 1 : 0;
-  let shownRate = 55;
-  let phase = 0, travel = 0, clock = 0;
-  const BUILD_S = 2.4;
+  const sim = { stepF: 0, build: 0, plan: 0, phase: 0, travel: 0, clock: 0 };
 
-  function rateAt(f){
-    f = Math.max(0, Math.min(STEPS.length - 1, f));
-    const i = Math.min(STEPS.length - 2, Math.floor(f));
-    return lerp(STEPS[i].rate, STEPS[i + 1].rate, clamp01(f - i));
-  }
-  const ws2Alpha = () => clamp01(stepF - 1);            // station 2 arrives at step 2
+  const ws2Alpha = () => clamp01(sim.stepF - 1);            // station 2 arrives at step 2
   function opAlpha(i){
     if (i === 0) return 1;
-    if (i === 1) return clamp01(stepF);                 // 2nd operator at step 1
-    return clamp01(stepF - 2);                          // 3rd operator at step 3
+    if (i === 1) return clamp01(sim.stepF);                 // 2nd operator at step 1
+    return clamp01(sim.stepF - 2);                          // 3rd operator at step 3
   }
   // The report's constraint: the manual station, not the machines. Parts crawl
   // through it at baseline, so the backlog sits there and the robot waits.
-  const speedAt = t => (t > 0.80 && t < 0.94) ? lerp(0.16, 1, clamp01(stepF / 3)) : 1;
+  const speedAt = t => (t > 0.80 && t < 0.94) ? lerp(0.16, 1, clamp01(sim.stepF / 3)) : 1;
 
   const calm = new THREE.Color(CALM), amber = new THREE.Color(AMBER), mix = new THREE.Color();
 
-  function applyState(){
-    const t3 = clamp01(stepF / 3);
-    const pulse = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(clock * 3.2);
+  function apply(){
+    const t3 = clamp01(sim.stepF / 3);
+    const pulse = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(sim.clock * 3.2);
 
     // build: each component rises from the plate in turn
     ORDER.forEach((k, i) => {
-      const local = ease(clamp01((build * (ORDER.length + 2) - i) / 2.6));
+      const local = ease(clamp01((sim.build * (ORDER.length + 2) - i) / 2.6));
       const shown = MACHINES[k] && MACHINES[k].added ? ease(ws2Alpha()) : 1;
       const s = local * shown;
       const g = comps[k].group;
@@ -640,7 +653,7 @@ export function mount(){
       g.scale.set(1, Math.max(0.002, s), 1);
       comps[k].alpha = s;
     });
-    const live = build > 0.95 ? 1 : 0;
+    const live = sim.build > 0.95 ? 1 : 0;
 
     // the constraint glows hot at baseline and settles as it is worked out
     mix.copy(amber).lerp(calm, t3);
@@ -648,9 +661,11 @@ export function mount(){
     glow.ws1.emissiveIntensity = lerp(1.6 + 1.8 * pulse, 0.8, t3);
     glow.ws2.color.copy(mix); glow.ws2.emissive.copy(mix);
     glow.ws2.emissiveIntensity = 0.8;
-    zoneMat.opacity = live * clamp01((1.2 - stepF) / 1.2) * (0.55 + 0.45 * pulse);
-    flowMats[0].opacity = 0.38 * build;
-    flowMats[1].opacity = 0.38 * build * ws2Alpha();
+    zoneMat.opacity = live * clamp01((1.2 - sim.stepF) / 1.2) * (0.55 + 0.45 * pulse);
+    flowMats[0].opacity = 0.38 * Math.max(sim.build, sim.plan);
+    planMat.opacity = 0.5 * sim.plan;
+    plan.visible = sim.plan > 0.01;
+    flowMats[1].opacity = 0.38 * sim.build * ws2Alpha();
     flowLines[1].visible = ws2Alpha() > 0.02;
 
     // parts
@@ -677,126 +692,41 @@ export function mount(){
     });
 
     // machines
-    poseRobot(phase);
-    spindle.position.y = 1.42 - 0.13 * (0.5 + 0.5 * Math.sin(clock * 2.1));
-    spindle.rotation.y = clock * 9;
-    bridge.position.z = Math.sin(clock * 0.5) * 0.45;
-    carriage.position.x = Math.sin(clock * 0.83) * 0.5;
-    quill.position.y = -0.08 * (0.5 + 0.5 * Math.sin(clock * 1.7));
-    updateBelts(travel);
-
-    rateEl.textContent = Math.round(shownRate);
+    poseRobot(sim.phase);
+    spindle.position.y = 1.42 - 0.13 * (0.5 + 0.5 * Math.sin(sim.clock * 2.1));
+    spindle.rotation.y = sim.clock * 9;
+    bridge.position.z = Math.sin(sim.clock * 0.5) * 0.45;
+    carriage.position.x = Math.sin(sim.clock * 0.83) * 0.5;
+    quill.position.y = -0.08 * (0.5 + 0.5 * Math.sin(sim.clock * 1.7));
+    updateBelts(sim.travel);
   }
 
-  /* ---------- callouts: one row of labels along the top, leaders down ---------- */
-  const labelLayer = document.createElement('div');
-  labelLayer.className = 'cell-labels mono';
-  labelLayer.setAttribute('aria-hidden', 'true');
-  stage.appendChild(labelLayer);
-  const labels = ORDER.filter(k => MACHINES[k]).map(k => {
-    const m = MACHINES[k];
-    const el = document.createElement('span');
-    el.className = 'cell-lab' + (m.hot ? ' hot' : '');
-    el.textContent = m.label;
-    const lead = document.createElement('i');
-    lead.className = 'cell-lead';
-    el.style.opacity = lead.style.opacity = 0;
-    labelLayer.append(lead, el);
-    return { key: k, el, lead, anchor: new THREE.Vector3(wx(m.x), comps[k].top + 0.08, wz(m.z)), half: 0 };
-  });
-  const note = document.createElement('span');
-  note.className = 'cell-lab cell-note hot';
-  note.textContent = 'Constraint · manual operations';
-  labelLayer.appendChild(note);
-  const noteAnchor = new THREE.Vector3(wx(MACHINES.ws1.x), 0, wz(MACHINES.ws1.z + MACHINES.ws1.d / 2) + 0.35);
-  let noteHalf = 0, bandBottom = 0;
-  function measureLabels(){
-    labels.forEach(L => { L.half = L.el.offsetWidth / 2 + 6; });
-    noteHalf = note.offsetWidth / 2 + 6;
-  }
-  const v = new THREE.Vector3();
-  function toScreen(p){
-    v.copy(p).project(camera);
-    return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H];
-  }
-  function layoutLabels(){
-    const EDGE = 8, BAND0 = 6, ROWH = 17;
-    const live = labels.filter(L => {
-      const a = comps[L.key].alpha > 0.85 ? 1 : 0;
-      if (MACHINES[L.key].hot) L.el.classList.toggle('hot', stepF < 2.5);
-      L.el.style.opacity = L.lead.style.opacity = a;
-      return a;
-    });
-    live.forEach(L => {
-      const p = comps[L.key].group.position;
-      v.set(p.x, L.anchor.y, p.z);
-      [L.x, L.y] = toScreen(v);
-      L.lx = Math.max(L.half + EDGE, Math.min(W - L.half - EDGE, L.x));
-    });
-    const rowRight = [];
-    let maxRow = 0;
-    live.sort((a, b) => a.lx - b.lx).forEach(L => {
-      let row = 0;
-      while (rowRight[row] !== undefined && L.lx - L.half < rowRight[row]) row++;
-      rowRight[row] = L.lx + L.half;
-      L.row = row;
-      if (row > maxRow) maxRow = row;
-    });
-    bandBottom = BAND0 + (maxRow + 1) * ROWH;
-    live.forEach(L => {
-      const top = BAND0 + L.row * ROWH;
-      L.el.style.transform = `translate(${Math.round(L.lx - L.half + 6)}px,${top}px)`;
-      const from = top + ROWH - 1, len = L.y - from;
-      if (len > 6){
-        L.lead.style.transform = `translate(${Math.round(L.x)}px,${from}px)`;
-        L.lead.style.height = Math.round(len) + 'px';
-      } else {
-        L.lead.style.opacity = 0;
+  /* Let the line run for dt seconds: belts, robot, parts and operators all
+     move at the measured output of the current step. */
+  function advance(dt){
+    // line speed tracks the measured output at this step
+    const boost = rateAt(sim.stepF) / 55;
+    sim.clock += dt;
+    sim.travel += dt * 0.42 * boost;
+    sim.phase = (sim.phase + dt * 0.055 * boost) % 1;
+    PARTS.forEach(p => {
+      p.t += dt * 0.055 * speedAt(p.t) * boost;
+      if (p.t > 1) p.t -= 1;
+      // Relieving the constraint dissolves the backlog: parts ease back to
+      // even spacing instead of carrying the baseline queue forever.
+      const relief = clamp01(sim.stepF / 3);
+      if (relief > 0.02){
+        let d = ((sim.phase + p.slot) % 1) - p.t;
+        if (d > 0.5) d -= 1;
+        if (d < -0.5) d += 1;
+        p.t += d * Math.min(1, dt * 0.9 * relief);
+        if (p.t > 1) p.t -= 1;
+        if (p.t < 0) p.t += 1;
       }
     });
-    // the constraint call-out, baseline only
-    const na = build > 0.95 ? clamp01((1.2 - stepF) / 1.2) : 0;
-    note.style.opacity = na;
-    if (na > 0){
-      const [nx, ny] = toScreen(noteAnchor);
-      const x = Math.max(noteHalf + EDGE, Math.min(W - noteHalf - EDGE, nx));
-      const y = Math.max(bandBottom + 4, Math.min(H - 20, ny + 8));
-      note.style.transform = `translate(${Math.round(x - noteHalf + 6)}px,${Math.round(y)}px)`;
-    }
+    OPS.forEach((o, i) => { o.t = (o.t + dt * 0.03 * (0.9 + i * 0.16) * boost) % 1; });
   }
 
-  /* ---------- camera ---------- */
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.07;
-  controls.enablePan = false;
-  controls.minPolarAngle = 0.02;
-  controls.maxPolarAngle = Math.PI * 0.47;        // stay above the floor
-  controls.rotateSpeed = 0.55;
-  controls.zoomSpeed = 0.7;
-  // On a touch screen an up-or-down swipe still scrolls the page; a sideways
-  // swipe turns the model and a pinch zooms it.
-  const touch = matchMedia('(pointer: coarse)').matches;
-  if (touch) renderer.domElement.style.touchAction = stage.style.touchAction = 'pan-y';
-  // The page keeps the plain wheel for scrolling; pinch (or Ctrl + wheel) zooms.
-  stage.addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) e.stopPropagation(); }, { capture: true });
-
-  const deg = Math.PI / 180;
-  const VIEWS = {
-    // from the operators' side, looking down across the stations to the cell
-    iso: { dir: new THREE.Vector3(), label: 'Top view' },
-    // straight down, laid out as in the report's Fig. 37
-    top: { dir: new THREE.Vector3(0, 1, 0.012).normalize(), label: '3/4 view' }
-  };
-  // A squarer stage (a phone) gets a steeper look so the plate fills it.
-  function aimIso(){
-    const az = -20 * deg, el = (W / H < 1.6 ? 38 : 23) * deg;
-    VIEWS.iso.dir.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
-  }
-  let view = 'iso';
-  const target = new THREE.Vector3(0, 0.7, 0);
-  const goal = new THREE.Vector3();
-  let cameraAnimating = false, dragging = false;
   // What has to stay in frame: the plate, and the top of every component.
   const corners = [];
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) for (const y of [-0.55, 0])
@@ -807,196 +737,8 @@ export function mount(){
       corners.push(new THREE.Vector3(wx(m.x + sx * m.w / 2), top, wz(m.z + sz * m.d / 2)));
   }
 
-  // Fit: the distance at which everything fills the stage from a direction,
-  // and how far the picture then has to shift to sit centred under the
-  // callout row. The shift is a view offset, so the orbit centre stays put.
-  const FIT_X = 0.96;
-  let viewOff = 0, goalOff = 0;
-  function measure(dir, d){
-    camera.position.copy(target).addScaledVector(dir, d);
-    camera.lookAt(target);
-    camera.updateMatrixWorld();
-    let ex = 0, y0 = Infinity, y1 = -Infinity;
-    for (const c of corners){
-      v.copy(c).project(camera);
-      ex = Math.max(ex, Math.abs(v.x));
-      y0 = Math.min(y0, v.y);
-      y1 = Math.max(y1, v.y);
-    }
-    return { ex, half: (y1 - y0) / 2, mid: (y1 + y0) / 2 };
-  }
-  function fitView(dir){
-    camera.clearViewOffset();
-    camera.updateProjectionMatrix();
-    // Leave the callout rows their space at the top: a narrow stage needs
-    // more rows for the same names.
-    const rows = Math.max(1, Math.ceil(labels.reduce((sum, L) => sum + L.half * 2, 0) / (W * 0.72)));
-    const top = 1 - 2 * (10 + rows * 17 + 10) / H, bottom = -1 + 2 * 16 / H;
-    const fitY = Math.max(0.3, (top - bottom) / 2), centreY = (top + bottom) / 2;
-    let d = 30;
-    for (let pass = 0; pass < 5; pass++){
-      const e = measure(dir, d);
-      d *= Math.max(e.ex / FIT_X, e.half / fitY);
-    }
-    return { d, off: (centreY - measure(dir, d).mid) * H / 2 };
-  }
-  function applyOffset(){
-    camera.setViewOffset(W, H, 0, viewOff, W, H);
-    camera.updateProjectionMatrix();
-  }
-  // mode: 'snap' jumps to the view, 'ease' glides to it, 'keep' leaves the
-  // camera where the reader put it and only refreshes the limits.
-  function setGoal(mode){
-    const saved = camera.position.clone(), savedQ = camera.quaternion.clone();
-    const fit = fitView(VIEWS[view].dir);
-    camera.position.copy(saved); camera.quaternion.copy(savedQ);
-    goal.copy(target).addScaledVector(VIEWS[view].dir, fit.d);
-    goalOff = fit.off;
-    controls.minDistance = fit.d * 0.4;
-    controls.maxDistance = fit.d * 1.5;
-    if (mode === 'snap'){
-      camera.position.copy(goal);
-      controls.target.copy(target);
-      viewOff = goalOff;
-      cameraAnimating = false;
-    } else if (mode === 'ease'){
-      cameraAnimating = true;
-    }
-    applyOffset();
-    controls.update();
-  }
-  function resize(){
-    [W, H] = sizeOf();
-    renderer.setSize(W, H, false);
-    camera.aspect = W / H;
-    aimIso();
-    measureLabels();
-    setGoal(dragging || userMoved ? 'keep' : 'snap');
-    requestRender();
-  }
-  let userMoved = false;
-  controls.addEventListener('start', () => { dragging = true; cameraAnimating = false; userMoved = true; hint.classList.add('gone'); });
-  controls.addEventListener('end', () => { dragging = false; });
-  controls.addEventListener('change', requestRender);
+  // where the baseline constraint is called out: the working edge of station 1
+  const constraintAnchor = new THREE.Vector3(wx(MACHINES.ws1.x), 0, wz(MACHINES.ws1.z + MACHINES.ws1.d / 2) + 0.35);
 
-  /* ---------- loop: runs only while the figure is on screen ---------- */
-  let inView = false, running = false, seen = false, last = performance.now(), queued = false, lost = false;
-  function requestRender(){
-    if (running || queued || lost) return;
-    queued = true;
-    requestAnimationFrame(() => { queued = false; drawFrame(0); });
-  }
-  function drawFrame(dt){
-    if (cameraAnimating && !dragging){
-      const k = 1 - Math.exp(-dt * 3.2);
-      camera.position.lerp(goal, dt ? k : 1);
-      controls.target.lerp(target, dt ? k : 1);
-      viewOff = lerp(viewOff, goalOff, dt ? k : 1);
-      applyOffset();
-      if (camera.position.distanceTo(goal) < 0.02) cameraAnimating = false;
-    }
-    controls.update();
-    applyState();
-    layoutLabels();
-    renderer.render(scene, camera);
-  }
-  function frame(now){
-    if (!inView || lost){ running = false; return; }
-    // rAF's timestamp can be a hair earlier than the clock read in start().
-    const dt = Math.max(0, Math.min(64, now - last)) / 1000;
-    last = now;
-
-    if (build < 1) build = Math.min(1, build + dt / BUILD_S);
-    if (stepF !== stepTarget){
-      const d = Math.sign(stepTarget - stepF) * dt / 0.75;
-      stepF = Math.abs(stepTarget - stepF) <= Math.abs(d) ? stepTarget : stepF + d;
-    }
-    // line speed tracks the measured output at this step
-    const boost = rateAt(stepF) / 55;
-    clock += dt;
-    travel += dt * 0.42 * boost;
-    phase = (phase + dt * 0.055 * boost) % 1;
-    PARTS.forEach(p => {
-      p.t += dt * 0.055 * speedAt(p.t) * boost;
-      if (p.t > 1) p.t -= 1;
-      // Relieving the constraint dissolves the backlog: parts ease back to
-      // even spacing instead of carrying the baseline queue forever.
-      const relief = clamp01(stepF / 3);
-      if (relief > 0.02){
-        let d = ((phase + p.slot) % 1) - p.t;
-        if (d > 0.5) d -= 1;
-        if (d < -0.5) d += 1;
-        p.t += d * Math.min(1, dt * 0.9 * relief);
-        if (p.t > 1) p.t -= 1;
-        if (p.t < 0) p.t += 1;
-      }
-    });
-    OPS.forEach((o, i) => { o.t = (o.t + dt * 0.03 * (0.9 + i * 0.16) * boost) % 1; });
-    shownRate += (rateAt(stepF) - shownRate) * Math.min(1, dt * 4);
-
-    drawFrame(dt);
-    requestAnimationFrame(frame);
-  }
-  function start(){
-    if (running || reduce) return;
-    running = true;
-    last = performance.now();
-    requestAnimationFrame(frame);
-  }
-
-  /* ---------- controls ---------- */
-  function setStep(n){
-    stepTarget = n;
-    stepBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.step === n)));
-    modeEl.textContent = STEPS[n].name;
-    readout.classList.toggle('opt', n === STEPS.length - 1);
-    const pct = Math.round((STEPS[n].rate / STEPS[0].rate - 1) * 100);
-    deltaEl.textContent = n === 0 ? 'Baseline' : '+' + pct + '% vs baseline';
-    if (reduce){ stepF = n; shownRate = STEPS[n].rate; requestRender(); }
-  }
-  stepBtns.forEach(b => b.addEventListener('click', () => setStep(+b.dataset.step)));
-
-  bView.addEventListener('click', () => {
-    view = view === 'iso' ? 'top' : 'iso';
-    bView.textContent = VIEWS[view].label;
-    userMoved = false;
-    setGoal(reduce ? 'snap' : 'ease');
-    requestRender();
-  });
-  bView.textContent = VIEWS[view].label;
-
-  bReplay.addEventListener('click', () => {
-    if (reduce) return;
-    build = 0;
-    PARTS.forEach((p, i) => { p.t = i / PARTS.length; });
-    OPS.forEach((o, i) => { o.t = [0, 0.34, 0.67][i]; });
-  });
-  if (reduce) bReplay.hidden = true;
-
-  renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); lost = true; });
-  renderer.domElement.addEventListener('webglcontextrestored', () => { lost = false; requestRender(); if (inView) start(); });
-
-  stage.setAttribute('role', 'img');
-  stage.setAttribute('aria-label', 'Interactive 3D model of the factory cell: a warehouse shelf, infeed and outfeed conveyors, a vertical mill, a robot and a coordinate measuring machine inside a safety fence, manual assembly stations and a sink. Drag to rotate, pinch to zoom. The step buttons below add operators and a second station, raising output from 55 to 130 units per hour.');
-  hint.textContent = (touch ? 'Swipe to rotate' : 'Drag to rotate') + ' · pinch to zoom';
-
-  new ResizeObserver(resize).observe(stage);
-  resize();
-  renderer.compile(scene, camera);
-  drawFrame(0);
-
-  new IntersectionObserver(entries => {
-    inView = entries[0].isIntersecting;
-    if (!inView) return;
-    // the drag hint stays up for a while after the reader first gets here
-    if (!seen){ seen = true; setTimeout(() => hint.classList.add('gone'), 9000); }
-    if (reduce) requestRender(); else start();
-  }, { rootMargin: '0px 0px -15% 0px' }).observe(stage);
-
-  // For checks and screenshots: jump past the build-in.
-  instance = {
-    finishBuild(){ build = 1; requestRender(); },
-    jumpToStep(n){ setStep(n); stepF = n; shownRate = STEPS[n].rate; requestRender(); }
-  };
-  return instance;
+  return { scene, sim, corners, constraintAnchor, advance, apply };
 }
