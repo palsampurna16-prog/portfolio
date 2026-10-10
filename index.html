@@ -353,10 +353,9 @@ a:focus-visible > .lr > span{ transform: translateY(-3px); }
 /* ============================================================
    HERO
    ============================================================ */
-#hero{ padding-top: clamp(5.4rem, 4.6rem + 3vw, 7rem); padding-bottom: clamp(4rem,3rem + 5vw,7rem); border-top:0; }
+#hero{ padding-top: calc(var(--bar-h) + clamp(1.4rem, 3vw, 2.6rem)); padding-bottom: clamp(4rem,3rem + 5vw,7rem); border-top:0; }
 
-.hero-eyebrow{ color: var(--slate); display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; }
-.hero-eyebrow s{ display:block; width:34px; height:1px; background: var(--rule-2); text-decoration:none; }
+.hero-eyebrow{ color: var(--slate); padding: 0 var(--gut); }
 
 /* The crowd band. Its colours are fixed, not themed: ink on paper. Sizes
    inside it are in cqh so the portrait, the bubble and the crowd keep their
@@ -425,7 +424,10 @@ h1.crowd-bubble::after{
   margin-top: 1.9rem;
   font-size: var(--t-lead);
   color: var(--ink-2);
-  max-width: 52ch;
+  max-width: 72rem;
+  margin-inline: auto;
+  text-align: center;
+  text-wrap: balance;
   line-height: 1.5;
   letter-spacing: -0.008em;
 }
@@ -437,8 +439,9 @@ h1.crowd-bubble::after{
   border-top: 1px solid var(--rule);
 }
 .hero-meta div{
-  padding: 1.05rem 1.1rem 1.05rem 0;
+  padding: 1.05rem .8rem;
   border-right: 1px solid var(--rule);
+  text-align: center;
 }
 .hero-meta div:last-child{ border-right:0; }
 .hero-meta dt{ color: var(--slate); margin-bottom:.42rem; }
@@ -902,9 +905,7 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
      01 · ORIGIN
      ============================================================ -->
 <section class="sec" id="hero" data-station="Origin" data-thread="0.13">
-  <div class="wrap">
-    <div class="hero-eyebrow mono"><s></s> Vaasa, Finland · Active student status · Right to work in Finland</div>
-  </div>
+  <div class="hero-eyebrow mono">Vaasa, Finland · Active student status · Right to work in Finland</div>
 
   <!-- A strip of drafting paper, light in both themes: the crowd and the
        portrait are ink drawings and need paper behind them. -->
@@ -1916,6 +1917,11 @@ svg.dg g.hot:hover .ha{ opacity:.5; }
     }
 
     T = { line: line, total: total, nodes: nodeEls, H: H };
+    var heroFacts = document.querySelector("#hero .hero-meta");
+    if (heroFacts){
+      var cut = Math.round(heroFacts.getBoundingClientRect().bottom + window.pageYOffset + 18);
+      thread.style.clipPath = "inset(" + cut + "px 0 0 0)";
+    }
     litThreadNodes();
     paintThread();
   }
